@@ -5,7 +5,7 @@ To start the slide show:
 ```
 docker run -it --rm \
   --mount type=bind,source="$(pwd)",target="/slidev" \
-  --public 3030:3030 \
+  --publish 3030:3030 \
   docker.io/boxcutter/slidev --remote
 
 # Visit <http:/localhost:3030/>
