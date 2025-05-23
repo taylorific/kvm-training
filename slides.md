@@ -1227,3 +1227,181 @@ sudo systemctl enable --now serial-getty@ttyS0.service
 $ sudo apt-get update
 $ sudo apt-get install qemu-guest-agent
 ```
+
+---
+
+# QEMU
+
+---
+
+# x86_64 - Download cloud image template
+
+```bash
+curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+
+$ qemu-img convert \
+    -f qcow2 -O qcow2 \
+    noble-server-cloudimg-amd64.img \
+    ubuntu-server-2404.qcow2
+$ qemu-img resize -f qcow2 \
+    ubuntu-server-2404.qcow2 \
+    32G
+```
+
+---
+
+# Define login parameters for cloud-init ISO
+
+```bash
+cat >meta-data <<EOF
+instance-id: ubuntu-server-2404
+local-hostname: ubuntu-server-2404
+EOF
+
+cat >user-data <<EOF
+#cloud-config
+password: superseekret
+chpasswd:
+  expire: false
+ssh_pwauth: true
+EOF
+```
+
+---
+
+# Create the cloud-init ISO
+
+Install cloud image utils
+
+```bash
+sudo apt-get update
+sudo apt-get install cloud-image-utils
+```
+```bash
+cloud-localds cloud-init.iso user-data meta-data
+```
+
+---
+
+# x86_64 - Run the VM with QEMU on UEFI
+
+```bash
+qemu-system-x86_64 \
+  -name ubuntu-image \
+  -machine virt,accel=kvm,type=q35 \
+  -cpu host \
+  -smp 2 \
+  -m 2G \
+  -device virtio-keyboard \
+  -device virtio-mouse \
+  -device virtio-net-pci,netdev=net0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -cdrom cloud-init.iso \
+  -drive if=pflash,format=raw,readonly=on,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
+  -drive if=pflash,format=raw,readonly=on,unit=1,file=/usr/share/OVMF/OVMF_VARS_4M.fd \
+  -nographic
+```
+
+---
+
+# x86_64 - Run the VM with QEMU booting with BIOS
+
+```bash
+qemu-system-x86_64 \
+  -name ubuntu-image \
+  -machine virt,accel=kvm,type=q35 \
+  -cpu host \
+  -smp 2 \
+  -m 2G \
+  -device virtio-keyboard \
+  -device virtio-mouse \
+  -device virtio-net-pci,netdev=net0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -cdrom cloud-init.iso \
+  -nographic
+```
+
+# arm64 - Download cloud image template
+
+```bash
+curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-arm64.img
+
+$ qemu-img convert \
+    -f qcow2 -O qcow2 \
+    noble-server-cloudimg-arm64.img \
+    ubuntu-server-2404.qcow2
+$ qemu-img resize -f qcow2 \
+    ubuntu-server-2404.qcow2 \
+    32G
+```
+
+---
+
+# arm64 - Define login parameters for cloud-init ISO
+
+```bash
+cat >meta-data <<EOF
+instance-id: ubuntu-server-2404
+local-hostname: ubuntu-server-2404
+EOF
+
+cat >user-data <<EOF
+#cloud-config
+password: superseekret
+chpasswd:
+  expire: false
+ssh_pwauth: true
+EOF
+```
+
+---
+
+# arm64 - Create the cloud-init ISO
+
+Install cloud image utils
+
+```bash
+sudo apt-get update
+sudo apt-get install cloud-image-utils
+```
+```bash
+cloud-localds cloud-init.iso user-data meta-data
+```
+
+---
+
+# arm64 - Create firmware image
+
+```bash
+# Qemu expects aarch firmware images to be 64M so the firmware
+# images can't be used as is, some padding is needed to
+# create an image for pflash
+dd if=/dev/zero of=flash0.img bs=1M count=64
+dd if=/usr/share/AAVMF/AAVMF_CODE.fd of=flash0.img conv=notrunc
+dd if=/dev/zero of=flash1.img bs=1M count=64
+```
+
+# arm64 - Run the VM with QEMU
+
+```bash
+qemu-system-aarch64 \
+  -name ubuntu-image \
+  -machine virt,accel=kvm,gic-version=3,kernel-irqchip=on \
+  -cpu host \
+  -smp 2 \
+  -m 2G \
+  -device virtio-keyboard \
+  -device virtio-mouse \
+  -device virtio-gpu-pci \
+  -device virtio-net-pci,netdev=net0 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22 \
+  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -cdrom cloud-init.iso \
+  -drive if=pflash,format=raw,readonly=on,unit=0,file=flash0.img \
+  -drive if=pflash,format=raw,unit=1,file=flash1.img \
+  -nographic
+```
