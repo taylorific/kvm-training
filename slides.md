@@ -1324,6 +1324,8 @@ qemu-system-x86_64 \
   -nographic
 ```
 
+---
+
 # arm64 - Download cloud image template
 
 ```bash
