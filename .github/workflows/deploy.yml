@@ -33,7 +33,7 @@ jobs:
         run:  npm add -g @slidev/cli @slidev/theme-default @slidev/theme-seriph
 
       - name: Build
-        run: npm run build
+        run: npm run build --base /kvm-training/
 
       - uses: actions/configure-pages@v4
 
