@@ -99,6 +99,60 @@ Difference from other guides online:
 
 ---
 
+# QCOW2
+
+qcow2 stands for **QEMU Copy On Write version 2**, and it’s a disk image format used by QEMU/KVM virtual machines. It’s designed to be more flexible and efficient than raw disk images (.img, .raw).
+
+---
+
+# 🔍 Key Features of qcow2
+
+| Feature             | Description |
+| ------------------- | ----------- |
+| Copy-on-write (COW) | Only changes from the base image are stored. Great for snapshots and templates. |
+| Smaller size        | Sparse files — actual disk usage grows only as data is written. |
+| Compression         | Supports zlib-based compression for smaller image size. |
+| Snapshots           | Supports internal snapshots for point-in-time rollback. |
+| Backing files       | Can base one image on another (ideal for golden images/templates). |
+
+---
+
+# 🧠 How it works
+
+- A qcow2 image starts small.
+- When the VM writes data, the image grows dynamically.
+- You can layer qcow2 files by using a backing file, allowing multiple VMs to share a base OS image and store only their deltas.
+
+Example:
+
+```bash
+qemu-img create -f qcow2 -b ubuntu-base.qcow2 vm1.qcow2
+```
+
+---
+
+# ⚙️  Tools to work with qcow2
+
+Inspect
+
+```bash
+qemu-img info disk.qcow2
+```
+
+Create
+
+```bash
+qemu-img create -f qcow2 disk.qcow2 20G
+```
+
+Convert from raw
+
+```bash
+qemu-img convert -f raw -O qcow2 disk.raw disk.qcow2
+```
+
+---
+
 # Install QEMU/KVM on Ubuntu 24.04
 
 Install QEMU/KVM and libvirtd
@@ -285,18 +339,19 @@ https://cloud-images.ubuntu.com/
 # Download cloud image template and resize
 
 ```bash
-curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+# curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
 ```
 
 ```
 $ qemu-img info noble-server-cloudimg-amd64.img
 $ sudo qemu-img convert \
-  -f qcow2 -O qcow2 \
-  noble-server-cloudimg-amd64.img \
-  /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+    -f qcow2 -O qcow2 \
+    noble-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
 $ sudo qemu-img resize -f qcow2 \
-  /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
-  32G
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    32G
 ```
 
 ---
@@ -338,6 +393,20 @@ $ genisoimage \
 
 sudo cp ubuntu-server-2404-cloud-init.img \
   /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
+```
+
+Alternative way with cloud-localds:
+
+```bash
+sudo apt-get update
+sudo apt-get install cloud-image-utils
+```
+
+```bash
+sudo cloud-localds \
+  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso \
+  user-data meta-data \
+  --verbose
 ```
 
 ---
@@ -454,6 +523,216 @@ sudo apt-get install linux-modules-$(uname -r)
 sudo apt-get install linux-image-generic
 # linux-generic-hwe-24.04
 sudo reboot
+```
+
+---
+
+# Networking modes
+
+Libvirt requires configuration of virtual network switches, also known as
+"bridges" to support different network operating modes
+https://wiki.libvirt.org/VirtualNetworking.html
+
+In the default NAT mode, computers external to the host can't communicate
+with guest virtual machines. Guests can communicate with the outside
+world, however, similar to how home internet connections work behind a
+NAT gateway.
+---
+
+# What VirtualBox does that KVM doesn't
+
+1. VirtualBox Runs as a privileged daemon
+
+   - VirtualBox networking (including bridging is managed by the
+     VBoxNetAdp/VBoxNetFlt kernel modules that run with elevated privileges.
+
+   - These components hook into the host NIC at a lower level (via a
+     proprietary filter driver).
+
+   - This lets VirtualBox inject packets into the host NIC as if they came
+     directly from the guest - without needing the host to have any special
+     preconfigure bridge.
+
+2. No Need for Pre-Existing Linux bridges
+
+---
+
+# macvtap
+
+Create XML definition
+
+```bash
+cat <<EOF > /tmp/macvtap-network.xml
+<network>
+  <name>macvtap-network</name>
+  <forward mode="bridge">
+    <interface dev="eno1"/>
+  </forward>
+</network>
+EOF
+```
+
+Configure
+
+```bash
+$ virsh net-define /tmp/macvtap-network.xml
+$ virsh net-start macvtap-network
+$ virsh net-autostart macvtap-network
+```
+
+```bash
+virsh net-destroy macvtap-network
+virsh net-undefine macvtap-network
+```
+
+```bash
+sudo ip link add link eno1 name macvtap0 type macvtap mode bridge
+sudo ip link set macvtap0 up
+```
+
+---
+
+Verify
+```bash
+$ virsh net-list
+ Name              State    Autostart   Persistent
+----------------------------------------------------
+ default           active   yes         yes
+ macvtap-network   active   yes         yes
+```
+
+---
+
+# Download cloud image template and resize
+
+```bash
+curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+# curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+```
+
+```bash
+$ qemu-img info noble-server-cloudimg-amd64.img
+$ sudo qemu-img convert \
+    -f qcow2 -O qcow2 \
+    noble-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+$ sudo qemu-img resize -f qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    32G
+```
+
+---
+
+```bash
+touch network-config
+
+cat >meta-data <<EOF
+instance-id: ubuntu-server-2404
+local-hostname: ubuntu-server-2404
+EOF
+```
+
+---
+
+```bash
+cat >user-data <<EOF
+#cloud-config
+hostname: ubuntu-server-2404
+users:
+  - name: automat
+    uid: 63112
+    primary_group: users
+    groups: users
+    shell: /bin/bash
+    plain_text_passwd: superseekret
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+chpasswd: { expire: False }
+ssh_pwauth: True
+package_update: False
+package_upgrade: false
+packages:
+  - qemu-guest-agent
+growpart:
+  mode: auto
+  devices: ['/']
+power_state:
+  mode: reboot
+EOF
+```
+
+---
+
+```bash
+sudo apt-get update
+sudo apt-get install genisoimage
+```
+
+```bash
+$ genisoimage \
+    -input-charset utf-8 \
+    -output ubuntu-server-2404-cloud-init.img \
+    -volid cidata -rational-rock -joliet \
+    user-data meta-data network-config
+
+sudo cp ubuntu-server-2404-cloud-init.img \
+  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
+```
+
+---
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-server-2404 \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant ubuntu24.04 \
+  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
+  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --network network=macvtap-network,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+```
+
+---
+
+```bash
+sudo ip link add link eno1 name macvtap0 type macvtap mode bridge
+sudo ip link set macvtap0 up
+```
+
+🧠 macvtap0 acts like a NIC plugged into the LAN; eth0 must not be enslaved to a bridge.
+
+- /dev/tapX (e.g., /dev/tap0)
+- Associated macvtap0 interface bound to eth0
+
+```
+sudo ip link delete macvtap0
+```
+
+---
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-server-2404 \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant ubuntu24.04 \
+  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
+  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --network type=direct,source=eno1,source_mode=bridge,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
 ```
 
 ---
