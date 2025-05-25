@@ -23,6 +23,10 @@ mdc: true
 # open graph
 # seoMeta:
 #  ogImage: https://cover.sli.dev
+themeConfig:
+  paginationX: r
+  paginationY: t
+  paginationPagesDisabled: [1]
 ---
 
 # Virtual Machines with KVM/QEMU
