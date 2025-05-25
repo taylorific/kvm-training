@@ -30,7 +30,7 @@ jobs:
         run: npm install
 
       - name: Install slidev
-        run:  npm add -g @slidev/cli @slidev/theme-default
+        run:  npm add -g @slidev/cli @slidev/theme-default @slidev/theme-seriph
 
       - name: Build
         run: npm run build
