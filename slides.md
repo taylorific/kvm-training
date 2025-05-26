@@ -657,6 +657,8 @@ sudo ip link set macvtap0 up
 ```
 
 ---
+hideInToc: true
+---
 
 Verify
 ```bash
@@ -667,6 +669,8 @@ $ virsh net-list
  macvtap-network   active   yes         yes
 ```
 
+---
+hideInToc: true
 ---
 
 # Download cloud image template and resize
@@ -728,6 +732,8 @@ EOF
 ```
 
 ---
+hideInToc: true
+---
 
 ```bash
 sudo apt-get update
@@ -745,6 +751,8 @@ sudo cp ubuntu-server-2404-cloud-init.img \
   /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
@@ -766,6 +774,8 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
 ```bash
 sudo ip link add link eno1 name macvtap0 type macvtap mode bridge
@@ -781,6 +791,8 @@ sudo ip link set macvtap0 up
 sudo ip link delete macvtap0
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
@@ -821,6 +833,8 @@ nwdiag {
 ```
 
 ---
+hideInToc: true
+---
 
 # Determine networking type
 
@@ -855,7 +869,8 @@ IDX LINK      TYPE     OPERATIONAL SETUP
 ```
 
 ---
-
+hideInToc: true
+---
 systemd-networkd check
 ```bash
 $ networkctl
@@ -868,6 +883,8 @@ IDX LINK  TYPE     OPERATIONAL SETUP
 
 
 
+---
+hideInToc: true
 ---
 
 # Configure bridged networking with NetworkManager (1 of 2)
@@ -892,6 +909,8 @@ network:
   renderer: NetworkManager
 ```
 
+---
+hideInToc: true
 ---
 
 # Configure bridged networking with NetworkManager (2 of 2)
@@ -922,6 +941,8 @@ $ sudo netplan apply
 ```
 
 ---
+hideInToc: true
+---
 
 # systemd-networkd -  Configure bridged networking (1 of 3)
 
@@ -943,6 +964,8 @@ network:
   version: 2
 ```
 
+---
+hideInToc: true
 ---
 
 # systemd-networkd - Configure bridged networking (2 of 3)
@@ -968,6 +991,8 @@ network:
 ```
 
 ---
+hideInToc: true
+---
 
 # systemd-networkd - Configure bridged networking (3 of 3)
 
@@ -991,6 +1016,8 @@ ens33            UP
 br0              UP             172.25.0.112/22 metric 100 fe80::f4d4:91ff:feed:5e12/64
 ```
 
+---
+hideInToc: true
 ---
 
 # Create a definition for the host network (1 of 2)
@@ -1016,6 +1043,8 @@ $ sudo virsh net-autostart host-network
 ```
 
 ---
+hideInToc: true
+---
 
 # Create a definition for the host network (2 of 2)
 
@@ -1029,6 +1058,8 @@ $ virsh net-list --all
  host-network   active   yes         yes
 ```
 
+---
+hideInToc: true
 ---
 
 # Download cloud image template and resize
@@ -1049,6 +1080,8 @@ $ sudo qemu-img resize -f qcow2 \
 ```
 
 ---
+hideInToc: true
+---
 
 # Define login parameters for cloud-init ISO (1 of 2)
 
@@ -1061,6 +1094,8 @@ local-hostname: ubuntu-server-2404
 EOF
 ```
 
+---
+hideInToc: true
 ---
 
 # Define login parameters for cloud-init ISO (2 of 2)
@@ -1093,6 +1128,8 @@ EOF
 ```
 
 ---
+hideInToc: true
+---
 
 # Generate cloud-init ISO
 
@@ -1112,6 +1149,8 @@ sudo cp ubuntu-server-2404-cloud-init.img \
   /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
 ```
 
+---
+hideInToc: true
 ---
 
 # Spin up image and configure with cloud-init (on host-network)
@@ -1135,6 +1174,8 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
 # Accessing image
 
@@ -1146,6 +1187,8 @@ virsh console ubuntu-server-2404
 virt-viewer ubuntu-server-2404
 ```
 
+---
+hideInToc: true
 ---
 
 # Disable cloud-init and remove cloud-init ISO
@@ -1171,6 +1214,8 @@ $ sudo rm /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
 ```
 
 ---
+hideInToc: true
+---
 
 # Snapshots
 
@@ -1186,6 +1231,8 @@ $ virsh shutdown ubuntu-server-2404
 $ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
 ```
 
+---
+hideInToc: true
 ---
 
 # Get IP of virtual machine (bridged networking)
@@ -1213,6 +1260,8 @@ arp -an
 ```
 
 ---
+hideInToc: true
+---
 
 # If you need additional drivers
 
@@ -1239,6 +1288,8 @@ sudo reboot
 - Complete driver set
 
 ---
+hideInToc: true
+---
 
 # Create ISO pool
 
@@ -1250,6 +1301,8 @@ virsh pool-start iso
 virsh pool-autostart iso
 ```
 
+---
+hideInToc: true
 ---
 
 # Docker install
@@ -1339,6 +1392,8 @@ $ virsh-viewer ubuntu-server-2404
 ```
 
 ---
+hideInToc: true
+---
 
 # Disable cloud-init and remove cloud-init ISO
 
@@ -1357,6 +1412,8 @@ $ sudo shutdown -h now
 ```
 
 ---
+hideInToc: true
+---
 
 # Snapshots
 
@@ -1370,6 +1427,8 @@ $ virsh shutdown ubuntu-server-2404
 $ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
 ```
 
+---
+hideInToc: true
 ---
 
 # Get IP of virtual machine
@@ -1395,6 +1454,8 @@ arp -an
 ```
 
 ---
+hideInToc: true
+---
 
 # If you need additional drivers
 
@@ -1413,6 +1474,8 @@ sudo reboot
 ```
 
 ---
+hideInToc: true
+---
 
 # Ubuntu 24.04 Desktop manual install
 
@@ -1423,6 +1486,8 @@ curl -LO https://https://crake-nexus.org.boxcutter.net//repository/ubuntu-releas
 d7fe3d6a0419667d2f8eff12796996328daa2d4f90cd9f87aa9371b362f987bf  ubuntu-24.04.2-desktop-amd64.iso
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
@@ -1449,6 +1514,8 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
 ```bash
 virsh vncdisplay ubuntu-desktop-2404
@@ -1461,6 +1528,8 @@ ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
 # When the install is complete the VM will be shut down
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
@@ -1511,6 +1580,8 @@ docker run -it --rm \
 ```
 
 ---
+hideInToc: true
+---
 
 ```bash
 sudo cp ubuntu-24.04.2-desktop-autoinstall.iso \
@@ -1536,6 +1607,8 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
 ```bash
 virsh vncdisplay ubuntu-desktop-2404
@@ -1548,6 +1621,8 @@ ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
 # When the install is complete the VM will be shut down
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
@@ -1574,9 +1649,17 @@ $ sudo apt-get install qemu-guest-agent
 ```
 
 ---
+layout: section
+---
 
 # QEMU
 
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
 ---
 
 # x86_64 - Download cloud image template
@@ -1594,6 +1677,8 @@ $ qemu-img resize -f qcow2 \
     32G
 ```
 
+---
+hideInToc: true
 ---
 
 # Define login parameters for cloud-init ISO
@@ -1614,6 +1699,8 @@ EOF
 ```
 
 ---
+hideInToc: true
+---
 
 # Create the cloud-init ISO
 
@@ -1627,6 +1714,8 @@ sudo apt-get install cloud-image-utils
 cloud-localds cloud-init.iso user-data meta-data
 ```
 
+---
+hideInToc: true
 ---
 
 # x86_64 - Run the VM with QEMU on UEFI
@@ -1650,6 +1739,8 @@ qemu-system-x86_64 \
 ```
 
 ---
+hideInToc: true
+---
 
 # x86_64 - Run the VM with QEMU booting with BIOS
 
@@ -1670,6 +1761,8 @@ qemu-system-x86_64 \
 ```
 
 ---
+hideInToc: true
+---
 
 # arm64 - Download cloud image template
 
@@ -1686,6 +1779,8 @@ $ qemu-img resize -f qcow2 \
     32G
 ```
 
+---
+hideInToc: true
 ---
 
 # arm64 - Define login parameters for cloud-init ISO
@@ -1706,6 +1801,8 @@ EOF
 ```
 
 ---
+hideInToc: true
+---
 
 # arm64 - Create the cloud-init ISO
 
@@ -1719,6 +1816,8 @@ sudo apt-get install cloud-image-utils
 cloud-localds cloud-init.iso user-data meta-data
 ```
 
+---
+hideInToc: true
 ---
 
 # arm64 - Create firmware image
