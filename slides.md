@@ -5,19 +5,17 @@ theme: seriph
 # like them? see https://unsplash.com/collections/94734566/slidev
 background: https://cover.sli.dev
 # some information about your slides (markdown enabled)
-title: Welcome to Slidev
+hideInToc: true
+title: KVM/QEMU Training
+author: Mischa Taylor
 info: |
   ## Slidev Starter Template
   Presentation slides for developers.
-
-  Learn more at [Sli.dev](https://sli.dev)
 # apply unocss classes to the current slide
 class: text-center
 # https://sli.dev/features/drawing
 drawings:
   persist: false
-# slide transition: https://sli.dev/guide/animations.html#slide-transitions
-transition: slide-left
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
 # open graph
@@ -31,7 +29,7 @@ themeConfig:
 
 # Virtual Machines with KVM/QEMU
 
-Presentation slides for developers
+##### Mischa Taylor
 
 <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   Press Space for next page <carbon:arrow-right />
@@ -51,6 +49,17 @@ The last comment block of each slide will be treated as slide notes. It will be 
 -->
 
 ---
+hideInToc: true
+routeAlias: toc
+---
+
+# Table of Contents
+
+<Toc columns="2"/>
+
+---
+hideInToc: true
+---
 
 # Introduction
 
@@ -62,6 +71,8 @@ Difference from other guides online:
 - Robot focused
 
 ---
+hideInToc: true
+---
 
 # 🧠 What is libvirtd?
 
@@ -69,6 +80,8 @@ Difference from other guides online:
 - It provides a **centralized service** that manages virtual machines, storage pools, networks, etc.
 - It exposes a **standard API** over various protocols (e.g., UNIX socket, TCP) that tools like `virsh`, `virt-manager`, and OpenStack use.
 
+---
+hideInToc: true
 ---
 
 # 🕰️ Historical Timeline
@@ -81,6 +94,8 @@ Difference from other guides online:
 | 2020+     | `libvirtd` was deprecated in favor of **modular systemd socket-activated daemons**, like `virtnodedevd`, `virtqemud`, etc., starting with **libvirt 6.0+**.|
 
 ---
+hideInToc: true
+---
 
 🧾 Key virsh-specific Terminology (1 of 2)
 
@@ -92,6 +107,8 @@ Difference from other guides online:
 | **volume**       | Disk image/storage      | A single disk image or logical unit inside a pool (e.g., a qcow2 or raw disk image).|
 
 ---
+hideInToc: true
+---
 
 🧾 Key virsh-specific Terminology (2 of 2)
 
@@ -102,59 +119,17 @@ Difference from other guides online:
 | **capabilities** | Host features           | Includes CPU models, virtualization extensions, emulator binaries, etc. |
 
 ---
-
-# QCOW2
-
-qcow2 stands for **QEMU Copy On Write version 2**, and it’s a disk image format used by QEMU/KVM virtual machines. It’s designed to be more flexible and efficient than raw disk images (.img, .raw).
-
+layout: section
 ---
 
-# 🔍 Key Features of qcow2
+# Install and configure libvirt
 
-| Feature             | Description |
-| ------------------- | ----------- |
-| Copy-on-write (COW) | Only changes from the base image are stored. Great for snapshots and templates. |
-| Smaller size        | Sparse files — actual disk usage grows only as data is written. |
-| Compression         | Supports zlib-based compression for smaller image size. |
-| Snapshots           | Supports internal snapshots for point-in-time rollback. |
-| Backing files       | Can base one image on another (ideal for golden images/templates). |
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
 
 ---
-
-# 🧠 How it works
-
-- A qcow2 image starts small.
-- When the VM writes data, the image grows dynamically.
-- You can layer qcow2 files by using a backing file, allowing multiple VMs to share a base OS image and store only their deltas.
-
-Example:
-
-```bash
-qemu-img create -f qcow2 -b ubuntu-base.qcow2 vm1.qcow2
-```
-
----
-
-# ⚙️  Tools to work with qcow2
-
-Inspect
-
-```bash
-qemu-img info disk.qcow2
-```
-
-Create
-
-```bash
-qemu-img create -f qcow2 disk.qcow2 20G
-```
-
-Convert from raw
-
-```bash
-qemu-img convert -f raw -O qcow2 disk.raw disk.qcow2
-```
-
+hideInToc: true
 ---
 
 # Install QEMU/KVM on Ubuntu 24.04
@@ -183,6 +158,8 @@ sudo reboot
 ```
 
 ---
+hideInToc: true
+---
 
 # Validate config
 
@@ -202,41 +179,10 @@ sudo update-grub
 ```
 
 ---
-
-# Virtual Bridge 0 - NAT interface
-
-```plantuml
-@startuml
-
-nwdiag {
-
-  group {
-    color = "#FFAAAA";
-
-    robot01;
-    ubuntu-server-2404;
-  }
-
-  network host-network {
-    address = "10.67.132.0/22";
-
-    robot01 [ address = "10.67.132.223"];
-  }
-
-  network vibr0 {
-    address = "192.168.122.0/24";
-
-    robot01;
-    ubuntu-server-2404 [ address = "192.168.122.2"];
-  }
-}
-@enduml
-```
-
-
+hideInToc: true
 ---
 
-# Virtual Bridge 0 - NAT interface
+# Default Network
 
 ```bash
 $ cat /usr/share/libvirt/networks/default.xml
@@ -269,10 +215,11 @@ $ virsh net-list --all
 ```
 
 ---
+hideInToc: true
+---
 
-# Storage pools
+# Images
 
-Images
 ```bash
 $ virsh pool-define-as \
     --name default \
@@ -288,6 +235,8 @@ $ virsh pool-list --all
 $ virsh vol-list --pool default --details
 ```
 
+---
+hideInToc: true
 ---
 
 # cloud-init image pool
@@ -310,6 +259,8 @@ $ virsh vol-list --pool boot-scratch --details
 ```
 
 ---
+hideInToc: true
+---
 
 # ISO image pool
 
@@ -329,6 +280,18 @@ $ virsh vol-list --pool iso --details
 ```
 
 ---
+layout: section
+---
+
+# Spin up your first VM
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
 
 # Ubuntu cloud images
 
@@ -339,12 +302,15 @@ https://cloud-images.ubuntu.com/
 - Minimal drivers/hardware support out of the box
 
 ---
+hideInToc: true
+---
 
 # Download cloud image template and resize
 
 ```bash
-# curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+curl -LO \
+  https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+# curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
 ```
 
 ```
@@ -358,6 +324,8 @@ $ sudo qemu-img resize -f qcow2 \
     32G
 ```
 
+---
+hideInToc: true
 ---
 
 # Define login parameters for cloud-init ISO
@@ -379,6 +347,8 @@ ssh_pwauth: true
 EOF
 ```
 
+---
+hideInToc: true
 ---
 
 # Generate cloud-init ISO
@@ -414,6 +384,8 @@ sudo cloud-localds \
 ```
 
 ---
+hideInToc: true
+---
 
 # Spin up image and configure with cloud-init
 
@@ -436,8 +408,10 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
-# Accessing image
+# Virtual machine console
 
 ```bash
 virsh console ubuntu-server-2404
@@ -447,6 +421,8 @@ virsh console ubuntu-server-2404
 virt-viewer ubuntu-server-2404
 ```
 
+---
+hideInToc: true
 ---
 
 # Disable cloud-init and remove cloud-init ISO
@@ -473,6 +449,9 @@ $ sudo rm /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
 
 
 ---
+hideInToc: true
+---
+
 
 # Snapshots
 
@@ -483,11 +462,15 @@ $ virsh snapshot-revert ubuntu-server-2404 clean
 $ virsh snapshot-delete ubuntu-server-2404 clean
 ```
 
+# Cleanup
+
 ```bash
 $ virsh shutdown ubuntu-server-2404
 $ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
 ```
 
+---
+hideInToc: true
 ---
 
 # Get IP of virtual machine
@@ -513,6 +496,8 @@ arp -an
 ```
 
 ---
+hideInToc: true
+---
 
 # If you need additional drivers
 
@@ -530,6 +515,80 @@ sudo reboot
 ```
 
 ---
+hideInToc: true
+---
+
+# QCOW2
+
+qcow2 stands for **QEMU Copy On Write version 2**, and it’s a disk image format used by QEMU/KVM virtual machines. It’s designed to be more flexible and efficient than raw disk images (.img, .raw).
+
+---
+hideInToc: true
+---
+
+# 🔍 Key Features of qcow2
+
+| Feature             | Description |
+| ------------------- | ----------- |
+| Copy-on-write (COW) | Only changes from the base image are stored. Great for snapshots and templates. |
+| Smaller size        | Sparse files — actual disk usage grows only as data is written. |
+| Compression         | Supports zlib-based compression for smaller image size. |
+| Snapshots           | Supports internal snapshots for point-in-time rollback. |
+| Backing files       | Can base one image on another (ideal for golden images/templates). |
+
+---
+hideInToc: true
+---
+
+# 🧠 How it works
+
+- A qcow2 image starts small.
+- When the VM writes data, the image grows dynamically.
+- You can layer qcow2 files by using a backing file, allowing multiple VMs to share a base OS image and store only their deltas.
+
+Example:
+
+```bash
+qemu-img create -f qcow2 -b ubuntu-base.qcow2 vm1.qcow2
+```
+
+---
+hideInToc: true
+---
+
+# ⚙️  Tools to work with qcow2
+
+Inspect
+
+```bash
+qemu-img info disk.qcow2
+```
+
+Create
+
+```bash
+qemu-img create -f qcow2 disk.qcow2 20G
+```
+
+Convert from raw
+
+```bash
+qemu-img convert -f raw -O qcow2 disk.raw disk.qcow2
+```
+
+---
+layout: section
+---
+
+# Networking modes
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
 
 # Networking modes
 
@@ -541,6 +600,9 @@ In the default NAT mode, computers external to the host can't communicate
 with guest virtual machines. Guests can communicate with the outside
 world, however, similar to how home internet connections work behind a
 NAT gateway.
+
+---
+hideInToc: true
 ---
 
 # What VirtualBox does that KVM doesn't
