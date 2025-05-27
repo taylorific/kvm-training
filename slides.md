@@ -29,7 +29,7 @@ themeConfig:
 
 # Virtual Machines with KVM/QEMU
 
-##### Mischa Taylor
+##### Mischa Taylor | 📧 <taylor@linux.com>
 
 <div @click="$slidev.nav.next" class="mt-12 py-1" hover:bg="white op-10">
   Press Space for next page <carbon:arrow-right />
@@ -61,62 +61,33 @@ routeAlias: toc
 hideInToc: true
 ---
 
-# Introduction
+# What is KVM?
 
-Difference from other guides online:
-- Command-line focused (no virt-manager)
-- UEFI first (no legacy BIOS)
-- Works on both amd64 and arm64
-- GPU friendly
-- Robot focused
-
----
-hideInToc: true
----
-
-# 🧠 What is libvirtd?
-
-- `libvirtd` is the **daemon component** of the **libvirt** virtualization API and management toolset.
-- It provides a **centralized service** that manages virtual machines, storage pools, networks, etc.
-- It exposes a **standard API** over various protocols (e.g., UNIX socket, TCP) that tools like `virsh`, `virt-manager`, and OpenStack use.
+- KVM - **K**ernel-based **V**irtual **M**achine
+- Built-in to the Linux kernel
+- Kernel allocates memory for each VM
+  - Ensures that each guest has its own memory space
+  - Ensures that memory for each virtual machine is isolated from the other guests and the host
+- KVM cannot:
+  - Create a VM
+  - Save a VM
+  - Open a VM
+  - Provide user-accessible APIs
+- Controlled using ioctl calls
 
 ---
 hideInToc: true
 ---
 
-# 🕰️ Historical Timeline
+# KVM is useless by itself
 
-| Year      | Event                       |
-| --------- | --------------------------- |
-| 2005      |Red Hat engineer Daniel Veillard (of GNOME/XMMS fame) began work on **libvirt** as an abstraction layer over virtualization tools, primarily to support **Xen** initially. |
-| 2006-2007 | `libvirt` added support for **KVM**, which was merged into the Linux kernel in 2007. |
-| 2008+     | `libvirt` and `libvirtd` became core to virtualization stacks across Linux distributions (e.g., Red Hat, Ubuntu, SUSE).|
-| 2020+     | `libvirtd` was deprecated in favor of **modular systemd socket-activated daemons**, like `virtnodedevd`, `virtqemud`, etc., starting with **libvirt 6.0+**.|
-
----
-hideInToc: true
----
-
-🧾 Key virsh-specific Terminology (1 of 2)
-
-| Term          | Meaning/Equivalent      | Description |
-| ------------- | ----------------------- | ----------- |
-| **domain**      | Virtual Machine         | A running or defined guest. This is virsh’s generic term for a VM, regardless of hypervisor. |
-| **network**      | Virtual Network         | A software-defined virtual bridge or NAT network managed by libvirt. Often backed by dnsmasq. |
-| **pool**         | Storage Pool            | A collection of storage volumes, like a directory, LVM group, or iSCSI target. |
-| **volume**       | Disk image/storage      | A single disk image or logical unit inside a pool (e.g., a qcow2 or raw disk image).|
-
----
-hideInToc: true
----
-
-🧾 Key virsh-specific Terminology (2 of 2)
-
-| Term          | Meaning/Equivalent      | Description |
-| ------------- | ----------------------- | ----------- |
-| **interface**    | Physical or virtual NIC | Refers to host interfaces, not guest NICs. |
-| **snapshot**     | VM snapshot             | A saved VM state (RAM + disk state, if supported). |
-| **capabilities** | Host features           | Includes CPU models, virtualization extensions, emulator binaries, etc. |
+- QEMU
+  - Provides user-space CLI binaries to create and load VMs
+  - Emulates different hardware by replicating in software
+  - Can use hardware to accelerate virtualization for near-native performance (a.k.a. paravirtualization or virtio)
+- Libvirt
+  - Daemons that control virtual machine lifecycle
+  - Provides standard API for starting, stopping, configuring VMs
 
 ---
 layout: section
@@ -218,7 +189,7 @@ $ virsh net-list --all
 hideInToc: true
 ---
 
-# Images
+# Image pool
 
 ```bash
 $ virsh pool-define-as \
@@ -241,7 +212,10 @@ hideInToc: true
 
 # cloud-init image pool
 
-Note: There is a --cloud-init parameter for virt-install to auto-generate the cloud-init ISO. It creates a pool called boot-scratch in /var/lib/libvirt/boot. However oftentimes it's just easier to control the lifecycle of these images manually
+Note: There is a `--cloud-init` parameter for virt-install to auto-generate the
+cloud-init ISO. However there's currently a bug in virt-install <= 4.1.0 that
+makes it usuable. So we manage the lifecycle manually.
+https://github.com/virt-manager/virt-manager/issues/178
 
 ```bash
 $ virsh pool-define-as \
@@ -293,6 +267,37 @@ layout: section
 hideInToc: true
 ---
 
+# Verify host resources
+
+```bash
+$ virsh nodeinfo
+CPU model:           x86_64
+CPU(s):              12
+CPU frequency:       3799 MHz
+CPU socket(s):       1
+Core(s) per socket:  6
+Thread(s) per core:  2
+NUMA cell(s):        1
+Memory size:         65699300 KiB
+```
+
+```bash
+$ df -h
+Filesystem                         Size  Used Avail Use% Mounted on
+tmpfs                              6.3G  2.4M  6.3G   1% /run
+/dev/mapper/ubuntu--vg-ubuntu--lv  1.8T   16G  1.7T   1% /
+tmpfs                               32G     0   32G   0% /dev/shm
+tmpfs                              5.0M   12K  5.0M   1% /run/lock
+efivarfs                           192K   69K  119K  37% /sys/firmware/efi/efivars
+tmpfs                               32G     0   32G   0% /run/qemu
+/dev/nvme2n1p2                     2.0G  103M  1.7G   6% /boot
+/dev/nvme2n1p1                     1.1G  6.2M  1.1G   1% /boot/efi
+```
+
+---
+hideInToc: true
+---
+
 # Ubuntu cloud images
 
 https://cloud-images.ubuntu.com/
@@ -305,16 +310,26 @@ https://cloud-images.ubuntu.com/
 hideInToc: true
 ---
 
+# Create directory for config files (optional)
+
+```bash
+mkdir ubuntu-server-2404
+cd ubuntu-server-2404
+```
+
+---
+hideInToc: true
+---
+
 # Download cloud image template and resize
 
 ```bash
-curl -LO \
-  https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-# curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+$ curl -LO \
+    https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+$ qemu-img info noble-server-cloudimg-amd64.img
 ```
 
-```
-$ qemu-img info noble-server-cloudimg-amd64.img
+```bash
 $ sudo qemu-img convert \
     -f qcow2 -O qcow2 \
     noble-server-cloudimg-amd64.img \
@@ -324,6 +339,13 @@ $ sudo qemu-img resize -f qcow2 \
     32G
 ```
 
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+```
+-->
+
 ---
 hideInToc: true
 ---
@@ -331,13 +353,13 @@ hideInToc: true
 # Define login parameters for cloud-init ISO
 
 ```bash
-touch network-config
-
+# Required for NoCloud module to function, uniquely identifies instance
 cat >meta-data <<EOF
 instance-id: ubuntu-server-2404
 local-hostname: ubuntu-server-2404
 EOF
 
+# Main configuration script, tells cloud-init what to do when instance starts
 cat >user-data <<EOF
 #cloud-config
 password: superseekret
@@ -363,7 +385,7 @@ $ genisoimage \
     -input-charset utf-8 \
     -output ubuntu-server-2404-cloud-init.img \
     -volid cidata -rational-rock -joliet \
-    user-data meta-data network-config
+    user-data meta-data
 
 sudo cp ubuntu-server-2404-cloud-init.img \
   /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
@@ -414,10 +436,10 @@ hideInToc: true
 # Virtual machine console
 
 ```bash
+# Command line console
 virsh console ubuntu-server-2404
-```
 
-```bash
+# Graphical console
 virt-viewer ubuntu-server-2404
 ```
 
@@ -427,6 +449,7 @@ hideInToc: true
 
 # Disable cloud-init and remove cloud-init ISO
 
+In the guest:
 ```bash
 # login with ubuntu user
 $ cloud-init status
@@ -441,6 +464,7 @@ $ sudo apt-get install qemu-guest-agent
 $ sudo shutdown -h now
 ```
 
+On the host
 ```bash
 $ virsh domblklist ubuntu-server-2404
 $ virsh change-media ubuntu-server-2404 sda --eject
@@ -475,6 +499,8 @@ hideInToc: true
 
 # Get IP of virtual machine
 
+Preferred - use qemu-guest-agent
+
 ```bash
 virsh start ubuntu-server-2404
 
@@ -484,6 +510,8 @@ virsh list --all
 ```
 $ virsh domifaddr ubuntu-server-2404 --source agent
 ```
+
+When using default NAT-based networking, can query dnsmasq
 
 ```
 virsh net-dhcp-leases default
@@ -512,6 +540,91 @@ sudo apt-get install linux-modules-$(uname -r)
 sudo apt-get install linux-image-generic
 # linux-generic-hwe-24.04
 sudo reboot
+```
+
+---
+hideInToc: true
+---
+
+# Resource allocation
+
+- Reserving a core for the host is a good idea
+- Resource starvation can make a host inaccessible remotely
+- Memory can be overcommitted
+- Measure peak memory usage in each VM and add an overhead of 20% for host to manage guest
+
+---
+hideInToc: true
+---
+
+# Change number of CPUs
+
+Change the CPUs offline
+```bash
+# Shutdown the VM
+virsh shutdown <vm-name>
+# Wait until vm is shut off
+virsh list --all
+
+# Edit the VM definition
+virsh edit <vm name>
+# Look for the <vcpu> tag and update the count
+# You can also add a <cpu> block to define topology, features or NUMA if needed
+<vcpu placement='static'>4</vcpu>
+
+# Start the VM
+virsh start <vm-name>
+```
+
+---
+hideInToc: true
+---
+
+# Verify CPU settings
+
+On host:
+```bash
+virsh dominfo <vm-name>
+```
+
+In guest:
+```bash
+# Print number of vCPUS
+nproc
+# More detail
+lscpu
+# Count cpu entries in /proc/cpuinfo
+grep -c ^processor /proc/cpuinfo
+```
+
+---
+hideInToc: true
+---
+
+# Changing memory
+
+Change the memory offline
+
+```bash
+# Shutdown the VM
+virsh shutdown <vm-name>
+# Wait until vm is shut off
+virsh list --all
+
+# Edit the VM definition
+virsh edit <vm name>
+# Locate and update the <memory> and <currentMemory> elements (values in KiB):
+# currentMemory - how much memory is used at boot
+# memory - how much memory that can be hotplugged later if greater
+# Normally you'll just make these two fields the same
+<memory unit='KiB'>4194304</memory>         <!-- Max memory (e.g., 4 GiB) -->
+<currentMemory unit='KiB'>2097152</currentMemory> <!-- Initial memory -->
+
+# Start the VM
+virsh start <vm-name>
+
+# Verify settings:
+virsh dominfo <vm-name>
 ```
 
 ---
@@ -577,6 +690,210 @@ qemu-img convert -f raw -O qcow2 disk.raw disk.qcow2
 ```
 
 ---
+hideInToc: true
+---
+
+# Compacting qcow2 image files
+
+Within the guest - zerofill the data on disk:
+```
+root@guest # sfill -fllvz
+```
+
+Then clone the image file:
+
+```
+qemu-img convert -p -O qcow2 ./source.img ./packed.img
+```
+
+---
+hideInToc: true
+---
+
+# Mounting cloud images outside of a VM
+
+There are multiple ways to mount image files:
+
+- If image is raw, you can just mount the image file
+- mount+nbd
+  - really fast
+  - requires root
+  - cannot mount read-only
+- guestfish
+  - does not need root
+  - more complicated to use
+  - more safe, can mount read-only
+
+---
+hideInToc: true
+---
+
+# Mount cloud image without any special tooling
+
+Install prerequisites:
+```bash
+sudo apt update
+sudo apt install qemu-utils
+```
+
+If the image is in qcow2 format, convert it to raw:
+```bash
+$ qemu-img convert -f qcow2 -O raw \
+    noble-server-cloudimg-amd64.img \
+    noble-server-cloudimg-amd64.raw
+```
+
+---
+hideInToc: true
+---
+
+Find the offset of where the partition starts:
+
+```bash
+$ fdisk -l noble-server-cloudimg-amd64.raw
+Disk noble-server-cloudimg-amd64.raw: 3.5 GiB, 3758096384 bytes, 7340032 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: gpt
+Disk identifier: 911538A2-3427-4DA6-8050-A7A81B41F049
+
+Device                              Start     End Sectors  Size Type
+noble-server-cloudimg-amd64.raw1  2099200 7339998 5240799  2.5G Linux filesystem
+noble-server-cloudimg-amd64.raw14    2048   10239    8192    4M BIOS boot
+noble-server-cloudimg-amd64.raw15   10240  227327  217088  106M EFI System
+noble-server-cloudimg-amd64.raw16  227328 2097152 1869825  913M Linux extended b
+
+Partition table entries are not in disk order.
+
+# Offset is the second number times the sector size (usually 512 bytes)
+$ echo $((227328 * 512))
+116391936
+```
+
+---
+hideInToc: true
+---
+
+```bash
+# Mount the image
+sudo mkdir /mnt/my_image
+sudo mount -o loop,offset=116391936 \
+  noble-server-cloudimg-amd64.raw /mnt/my_image
+
+# Image contents are available as /mnt/my_image
+
+# Unmount the iamge
+sudo umount /mnt/my_image
+rmdir /mnt/my_image
+```
+
+---
+hideInToc: true
+---
+
+# Mount cloud image with qemu-nbd - prerequisites
+
+```bash
+# nbd module not loaded by default
+
+# Load the nbd module
+sudo modprobe nbd
+# Verify the nbd module is loaded
+ lsmod | grep nbd
+nbd                    65536  0
+# Should see nbd devices
+$ ls /dev/nbd*
+/dev/nbd0   /dev/nbd11  /dev/nbd14  /dev/nbd3  /dev/nbd6  /dev/nbd9
+/dev/nbd1   /dev/nbd12  /dev/nbd15  /dev/nbd4  /dev/nbd7
+/dev/nbd10  /dev/nbd13  /dev/nbd2   /dev/nbd5  /dev/nbd8
+```
+
+---
+hideInToc: true
+---
+
+# Mount cloud image with qemu-nbd
+
+```bash
+# Connect the QCOW2 image as a network block device
+sudo qemu-nbd --connect=/dev/nbd0 noble-server-cloudimg-amd64.img
+
+# List partitions
+$ sudo fdisk -l /dev/nbd0
+Disk /dev/nbd0: 3.5 GiB, 3758096384 bytes, 7340032 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 131072 bytes
+Disklabel type: gpt
+Disk identifier: 911538A2-3427-4DA6-8050-A7A81B41F049
+
+Device         Start     End Sectors  Size Type
+/dev/nbd0p1  2099200 7339998 5240799  2.5G Linux filesystem
+/dev/nbd0p14    2048   10239    8192    4M BIOS boot
+/dev/nbd0p15   10240  227327  217088  106M EFI System
+/dev/nbd0p16  227328 2097152 1869825  913M Linux extended boot
+
+Partition table entries are not in disk order
+```
+
+---
+hideInToc: true
+---
+
+# Mount cloud image with qemu-nbd
+
+```bash
+# Create a mount point directory
+sudo mkdir /mnt/my_image
+sudo mount /dev/nbd0p1 /mnt/my_image
+
+$ ls /mnt/my_image
+bin                etc    lib.usr-is-merged  opt   sbin                sys
+bin.usr-is-merged  home   lost+found         proc  sbin.usr-is-merged  tmp
+boot               lib    media              root  snap                usr
+dev                lib64  mnt                run   srv                 var
+
+# Use chroot jail to execute commands inside of the mounted root filesystem
+$ sudo chroot /mnt/my_image
+
+root@robot00:/# ls
+bin                etc    lib.usr-is-merged  opt   sbin                sys
+bin.usr-is-merged  home   lost+found         proc  sbin.usr-is-merged  tmp
+boot               lib    media              root  snap                usr
+dev                lib64  mnt                run   srv                 var
+
+root@robot00:/# exit
+exit
+```
+
+---
+hideInToc: true
+---
+
+# nbd cleanup
+
+```bash
+# Check for active nbd entries
+$ lsblk | grep '^nbd'
+
+# Unmount the image file
+$ sudo umount /mnt/my_image
+$ sudo qemu-nbd --disconnect /dev/nbd0
+```
+
+---
+hideInToc: true
+---
+
+# Mount cloud image with guestfish - prerequisites
+
+```bash
+sudo apt-get update
+sudo apt-get install libguestfs-tools
+```
+
+---
 layout: section
 ---
 
@@ -594,7 +911,9 @@ hideInToc: true
 
 Libvirt requires configuration of virtual network switches, also known as
 "bridges" to support different network operating modes
-https://wiki.libvirt.org/VirtualNetworking.html
+- https://wiki.libvirt.org/VirtualNetworking.html
+- https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking#
+- https://docs.kernel.org/networking/switchdev.html
 
 In the default NAT mode, computers external to the host can't communicate
 with guest virtual machines. Guests can communicate with the outside
@@ -646,14 +965,11 @@ $ virsh net-start macvtap-network
 $ virsh net-autostart macvtap-network
 ```
 
+Destroy
+
 ```bash
 virsh net-destroy macvtap-network
 virsh net-undefine macvtap-network
-```
-
-```bash
-sudo ip link add link eno1 name macvtap0 type macvtap mode bridge
-sudo ip link set macvtap0 up
 ```
 
 ---
@@ -677,7 +993,6 @@ hideInToc: true
 
 ```bash
 curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-# curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
 ```
 
 ```bash
@@ -691,11 +1006,17 @@ $ sudo qemu-img resize -f qcow2 \
     32G
 ```
 
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+```
+-->
+
 ---
 
 ```bash
-touch network-config
-
+# Required for NoCloud module to function, uniquely identifies instance
 cat >meta-data <<EOF
 instance-id: ubuntu-server-2404
 local-hostname: ubuntu-server-2404
@@ -705,6 +1026,7 @@ EOF
 ---
 
 ```bash
+# Main configuration script, tells cloud-init what to do when instance starts
 cat >user-data <<EOF
 #cloud-config
 hostname: ubuntu-server-2404
@@ -1291,6 +1613,15 @@ sudo reboot
 hideInToc: true
 ---
 
+# Helpful tools for creating bootable USB sticks from ISO
+
+- Ventoy: https://www.ventoy.net/en/index.html
+- Balena Etcher: https://etcher.balena.io/
+
+---
+hideInToc: true
+---
+
 # Create ISO pool
 
 
@@ -1831,6 +2162,10 @@ dd if=/usr/share/AAVMF/AAVMF_CODE.fd of=flash0.img conv=notrunc
 dd if=/dev/zero of=flash1.img bs=1M count=64
 ```
 
+---
+hideInToc: true
+---
+
 # arm64 - Run the VM with QEMU
 
 ```bash
@@ -1850,4 +2185,104 @@ qemu-system-aarch64 \
   -drive if=pflash,format=raw,readonly=on,unit=0,file=flash0.img \
   -drive if=pflash,format=raw,unit=1,file=flash1.img \
   -nographic
+```
+
+---
+layout: section
+---
+
+# CI image pipelines with Hashicorp Packer
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+```bash
+# Add Hashicorp's official GPG key
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://apt.releases.hashicorp.com/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg
+
+# Add the repository to Apt sources
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" main" | \
+  sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
+sudo apt-get update
+
+# To install the latest version
+sudo apt install packer
+
+# Verify the install
+$ packer --version
+Packer v1.12.0
+
+# Install dependencies for generating cloud-init images
+sudo apt-get update
+sudo apt-get install genisoimage
+```
+
+---
+hideInToc: true
+---
+
+```bash
+sudo apt-get update
+sudo apt-get install git
+```
+
+```bash
+mkdir -p ~/github/boxcutter
+cd ~/github/boxcutter
+git clone https://github.com/boxcutter/kvm.git
+cd kvm
+
+cd ubuntu/cloud/x86_64
+packer init .
+PACKER_LOG=1 packer build \
+  -var-file ubuntu-24.04-x86_64.pkrvars.hcl \
+  ubuntu.pkr.hcl
+```
+
+```bash
+$ sudo qemu-img convert \
+    -f qcow2 \
+    -O qcow2 \
+    output-ubuntu-24.04-x86_64/ubuntu-24.04-x86_64.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+$ sudo qemu-img resize \
+    -f qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    32G
+```
+
+---
+hideInToc: true
+---
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-server-2404 \
+  --boot uefi \
+  --memory 4096 \
+  --vcpus 2 \
+  --os-variant ubuntu24.04 \
+  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
+  --network network=default,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+
+virsh console ubuntu-server-2404
+
+# login with packer user
 ```
