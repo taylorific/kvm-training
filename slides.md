@@ -714,6 +714,9 @@ hideInToc: true
 
 There are multiple ways to mount image files:
 
+- virt-customize
+   - Provides simple image customization options through CLI parameters
+   - Not as useful as one would hope because network won't be configured propery   - No default users are on cloud images
 - If image is raw, you can just mount the image file
 - mount+nbd
   - really fast
@@ -723,6 +726,82 @@ There are multiple ways to mount image files:
   - does not need root
   - more complicated to use
   - more safe, can mount read-only
+
+---
+hideInToc: true
+---
+
+# virt-customize
+
+```bash
+sudo apt-get update
+sudo apt-get install libguestfs-tools
+```
+
+```bash
+$ curl -LO \
+    https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+$ qemu-img info noble-server-cloudimg-amd64.img
+```
+
+```bash
+$ sudo virt-customize \
+    -a noble-server-cloudimg-amd64.img \
+    --root-password password:superseekret \
+    --hostname noble-vm \
+    --run-command 'useradd -m -s /bin/bash automat' \
+    --password automat:password:superseekret \
+    --run-command 'usermod -aG sudo automat'
+[   0.0] Examining the guest ...
+[  14.1] Setting a random seed
+virt-customize: warning: random seed could not be set for this type of
+guest
+[  14.1] Setting the machine ID in /etc/machine-id
+[  14.1] Setting passwords
+[  15.0] SELinux relabelling
+[  15.2] Finishing off
+```
+
+---
+hideInToc: true
+---
+
+```bash
+$ sudo qemu-img convert \
+    -f qcow2 -O qcow2 \
+    noble-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/noble-vm.qcow2
+$ sudo qemu-img resize -f qcow2 \
+    /var/lib/libvirt/images/noble-vm.qcow2 \
+    32G
+```
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name noble-vm \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant ubuntu24.04 \
+  --disk /var/lib/libvirt/images/noble-vm.qcow2,bus=virtio \
+  --network network=default,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+
+```
+
+---
+hideInToc: true
+---
+
+```bash
+# login with root
+virsh console noble-vm
+```
 
 ---
 hideInToc: true
