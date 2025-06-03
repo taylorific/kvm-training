@@ -146,6 +146,11 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on systemd.unified_cgroup_h
 ```
 
 ```bash
+# amd
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amd_iommu=on iommu=pt systemd.unified_cgroup_hierarchy=0"
+```
+
+```bash
 sudo update-grub
 ```
 
@@ -2364,4 +2369,89 @@ virt-install \
 virsh console ubuntu-server-2404
 
 # login with packer user
+```
+
+---
+layout: section
+---
+
+# GPU
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+```bash
+# Get PCI vendor and device IDs for NVIDIA GPU devices
+$ lspci -nnk | grep -i nvidia
+01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [10de:2489] (rev a1)
+	DeviceName:  WIFI
+	Subsystem: ASUSTeK Computer Inc. GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [1043:884f]
+	Kernel driver in use: nouveau
+	Kernel modules: nvidiafb, nouveau
+01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [10de:228b] (rev a1)
+	Subsystem: ASUSTeK Computer Inc. GA104 High Definition Audio Controller [1043:884f]
+	Kernel driver in use: snd_hda_intel
+	Kernel modules: snd_hda_intel
+
+01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [10de:2489] (rev a1)
+	Kernel modules: nvidiafb, nouveau
+01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [10de:228b] (rev a1)
+```
+
+---
+hideInToc: true
+---
+
+# vfio-pci
+
+vfio-pci is a kernel driver that allows user-space programs (like QEMU) to
+safely and securely access PCI devices directly, bypassing the host OS drivers.
+
+It’s the core mechanism used for PCI passthrough, such as giving a GPU, NIC,
+or USB controller directly to a virtual machine.
+
+✅ What vfio-pci Does
+
+1. Claims ownership of a PCI device early in boot or on request.
+2. Detaches the device from its default Linux driver (e.g., nouveau, i915, xhci_hcd, etc.).
+3. Gives user-space (e.g., QEMU/KVM) secure access to the device’s MMIO, I/O ports, interrupts, and DMA.
+4. Prevents host kernel access to the device while assigned to a VM.
+
+---
+hideInToc: true
+---
+
+# During early kernel boot, make sure PCI devices are reserved early before initramfs or other drivers bind, as a precaution
+```bash
+cat /etc/default/grub |grep iommu
+GRUB_CMDLINE_LINUX="intel_iommu=on vfio-pci.ids=10de:2489,10de:228b
+```
+
+```bash
+sudo update-grub
+```
+
+# When the vfio-pci module is loaded, make sure that the PCI devices are reserved, before other drivers can bind to the devices
+```
+$ sudo sh -c 'echo "options vfio-pci ids=10de:2489,10de:228b disable_vga=1" > /etc/modprobe.d/vfio.conf'
+```
+
+---
+hideInToc: true
+---
+
+# Windows
+
+- https://sysguides.com/install-a-windows-11-virtual-machine-on-kvm
+- https://www.youtube.com/watch?v=7tqKBy9r9b4
+- https://blandmanstudios.medium.com/tutorial-the-ultimate-linux-laptop-for-pc-gamers-feat-kvm-and-vfio-dee521850385
+
+```bash
+SHIFT+F10 OOBE\BYPOASSNRO
+SHIFT+F10 start ms-cxh:localonly
 ```
