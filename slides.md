@@ -1895,8 +1895,8 @@ hideInToc: true
 # Ubuntu 24.04 Desktop manual install
 
 ```bash
-# curl -LO https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-curl -LO https://https://crake-nexus.org.boxcutter.net//repository/ubuntu-releases-proxy/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
+curl -LO https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
+# curl -LO https://https://crake-nexus.org.boxcutter.net//repository/ubuntu-releases-proxy/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
 % shasum -a 256 ubuntu-24.04.2-desktop-amd64.iso
 d7fe3d6a0419667d2f8eff12796996328daa2d4f90cd9f87aa9371b362f987bf  ubuntu-24.04.2-desktop-amd64.iso
 ```
@@ -1909,7 +1909,7 @@ hideInToc: true
 sudo cp ubuntu-24.04.2-desktop-amd64.iso \
   /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-amd64.iso
 
-virsh vol-create-as default ubuntu-desktop-2404.qcow2 50G --format qcow2
+virsh vol-create-as default ubuntu-desktop-2404.qcow2 64G --format qcow2
 
 virt-install \
   --connect qemu:///system \
@@ -1918,9 +1918,10 @@ virt-install \
   --cdrom /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-amd64.iso \
   --memory 4096 \
   --vcpus 2 \
+  --cpu mode=host-passthrough \
   --os-variant ubuntu24.04 \
-  --disk vol=default/ubuntu-desktop-2404.qcow2,bus=virtio \
-  --network network=default,model=virtio \
+  --disk vol=default/ubuntu-desktop-2404.qcow2,bus=virtio,cache=none,discard=unmap \
+  --network network=host-network,model=virtio \
   --graphics vnc,listen=0.0.0.0,password=foobar \
   --video qxl \
   --noautoconsole \
@@ -1968,6 +1969,23 @@ sudo systemctl enable --now serial-getty@ttyS0.service
 # 'virsh shutdown <image>' works
 $ sudo apt-get update
 $ sudo apt-get install qemu-guest-agent
+```
+
+---
+hideInToc: true
+---
+
+# Disable automatic updates
+
+```bash
+sudo systemctl disable --now unattended-upgrades.service
+sudo apt remove unattended-upgrades -y  # optional, fully removes it
+
+# edit the config
+sudo nano /etc/apt/apt.conf.d/20auto-upgrades
+
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Unattended-Upgrade "0";
 ```
 
 ---
@@ -2380,6 +2398,55 @@ layout: section
 <br>
 <br>
 <Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+# Identifify the CPU
+
+Look for the model name. If it says "with Radeon Graphics", then you have
+a Ryzen APU with integrated GPU.
+
+```bash
+$ lscpu
+
+Architecture:             x86_64
+Vendor ID:                AuthenticAMD
+  Model name:             AMD Ryzen 7 7840U w/ Radeon  780M Graphics
+```
+
+---
+hideInToc: true
+---
+
+# Identify the GPU
+
+```bash
+lspci | grep i -vga
+```
+
+---
+hideInToc: true
+---
+
+# Check with GPU is active
+
+```bash
+$ sudo lshw -c video
+  *-display
+       description: VGA compatible controller
+       product: Phoenix1
+       vendor: Advanced Micro Devices, Inc. [AMD/ATI]
+       physical id: 0
+       bus info: pci@0000:05:00.0
+       version: c4
+       width: 64 bits
+       clock: 33MHz
+       capabilities: pm pciexpress msi msix vga_controller bus_master cap_list
+       configuration: driver=amdgpu latency=0
+       resources: iomemory:7f0-7ef irq:61 memory:7fe0000000-7fefffffff memory:fbe00000-fbffffff ioport:f000(size=256) memory:fc400000-fc47ffff
+```
 
 ---
 hideInToc: true
