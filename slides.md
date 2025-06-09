@@ -2512,12 +2512,94 @@ $ sudo sh -c 'echo "options vfio-pci ids=10de:2489,10de:228b disable_vga=1" > /e
 hideInToc: true
 ---
 
+---
+hideInToc: true
+---
+
 # Streaming
 
 - NICE DCV
 - NoMachine
 - Parsec
 - HP RGS
+
+---
+hideInToc: true
+---
+
+# VA-API and VDPAU via mesa
+
+```bash
+sudo apt-get update
+sudo apt-get install \
+  mesa-va-drivers \
+  vainfo \
+  vdpauinfo \
+  libva-drm2 \
+  libva-x11-2 \
+  ffmpeg
+```
+
+```bash
+sudo apt update
+sudo apt install ffmpeg vainfo intel-media-va-driver-non-free  # or mesa-va-drivers for AMD
+```
+
+---
+hideInToc: true
+---
+
+```bash
+sudo usermod -aG render $USER
+newgrp render
+```
+
+```bash
+$ vainfo --display drm
+libva info: VA-API version 1.20.0
+libva info: Trying to open /usr/lib/x86_64-linux-gnu/dri/radeonsi_drv_video.so
+libva info: Found init function __vaDriverInit_1_20
+libva info: va_openDriver() returns 0
+vainfo: VA-API version: 1.20 (libva 2.12.0)
+vainfo: Driver version: Mesa Gallium driver 24.2.8-1ubuntu1~24.04.1 for AMD Radeon 780M (radeonsi, gfx1103_r1, LLVM 19.1.1, DRM 3.61, 6.11.0-26-generic)
+vainfo: Supported profile and entrypoints
+      VAProfileH264ConstrainedBaseline:	VAEntrypointVLD
+      VAProfileH264ConstrainedBaseline:	VAEntrypointEncSlice
+      VAProfileH264Main               :	VAEntrypointVLD
+      VAProfileH264Main               :	VAEntrypointEncSlice
+      VAProfileH264High               :	VAEntrypointVLD
+      VAProfileH264High               :	VAEntrypointEncSlice
+      VAProfileHEVCMain               :	VAEntrypointVLD
+      VAProfileHEVCMain               :	VAEntrypointEncSlice
+      VAProfileHEVCMain10             :	VAEntrypointVLD
+      VAProfileHEVCMain10             :	VAEntrypointEncSlice
+      VAProfileJPEGBaseline           :	VAEntrypointVLD
+      VAProfileVP9Profile0            :	VAEntrypointVLD
+      VAProfileVP9Profile2            :	VAEntrypointVLD
+      VAProfileAV1Profile0            :	VAEntrypointVLD
+      VAProfileAV1Profile0            :	VAEntrypointEncSlice
+      VAProfileNone                   :	VAEntrypointVideoProc
+```
+
+---
+hideInToc: true
+---
+
+```bash
+ffmpeg -init_hw_device vaapi=va:/dev/dri/renderD128 \
+  -filter_hw_device va \
+  -f lavfi -i testsrc=duration=5:size=1280x720:rate=30 \
+  -vf 'format=nv12,hwupload' \
+  -c:v h264_vaapi \
+  vaapi_test.mp4
+```
+
+```bash
+ffmpeg -vaapi_device /dev/dri/renderD128 \
+  -hwaccel vaapi -hwaccel_output_format vaapi \
+  -i input.mp4 -vf 'format=nv12,hwupload' \
+  -c:v h264_vaapi -b:v 5M output.mp4
+```
 
 ---
 hideInToc: true
