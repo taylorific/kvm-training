@@ -1815,6 +1815,114 @@ virt-install \
   --debug
 ```
 
+---
+hideInToc: true
+---
+
+# Centos Stream 10
+
+```bash
+$ curl -LO https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-x86_64-10-latest.x86_64.qcow2.SHA256SUM
+$ curl -LO https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-x86_64-10-latest.x86_64.qcow2
+```
+
+```bash
+$ qemu-img info CentOS-Stream-GenericCloud-x86_64-10-latest.x86_64.qcow2
+
+$ sudo qemu-img convert \
+    -f qcow2 \
+    -O qcow2 \
+    CentOS-Stream-GenericCloud-x86_64-10-latest.x86_64.qcow2 \
+    /var/lib/libvirt/images/centos-stream-10.qcow2
+$ sudo qemu-img resize \
+    -f qcow2 \
+    /var/lib/libvirt/images/centos-stream-10.qcow2 \
+    32G
+```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >meta-data <<EOF
+instance-id: centos-stream-10
+local-hostname: centos-stream-10
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+cat >user-data <<EOF
+#cloud-config
+hostname: centos-stream-10
+users:
+  - name: automat
+    uid: 63112
+    primary_group: users
+    groups: users
+    shell: /bin/bash
+    plain_text_passwd: superseekret
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+chpasswd: { expire: False }
+ssh_pwauth: True
+package_update: False
+package_upgrade: false
+packages:
+  - qemu-guest-agent
+growpart:
+  mode: auto
+  devices: ['/']
+power_state:
+  mode: reboot
+EOF
+```
+
+---
+hideInToc: true
+---
+
+```bash
+sudo apt-get update
+sudo apt-get install genisoimage
+```
+
+```bash
+$ genisoimage \
+    -input-charset utf-8 \
+    -output centos-stream-10-cloud-init.img \
+    -volid cidata -rational-rock -joliet \
+    user-data meta-data
+
+sudo cp centos-stream-10-cloud-init.img \
+  /var/lib/libvirt/boot/centos-stream-10-cloud-init.iso
+```
+
+---
+hideInToc: true
+---
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name centos-stream-10 \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant centos-stream10 \
+  --disk /var/lib/libvirt/images/centos-stream-10.qcow2,bus=virtio \
+  --disk /var/lib/libvirt/boot/centos-stream-10-cloud-init.iso,device=cdrom \
+  --network network=host-network,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+```
 
 ---
 
