@@ -1989,11 +1989,11 @@ docker run hello-world
 
 ---
 
-# Ubuntu Server 24.04 autoinstall
-
-https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
+# Ubuntu Server 24.04 autoinstall - prepare ISO
 
 ```bash
+mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
+git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
 cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-server-2404
 
 $ curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso
@@ -2020,6 +2020,8 @@ curl -LO \
 
 ---
 
+# Ubuntu Server 24.04 autoinstall - test autoinstall in a VM
+
 ```bash
 sudo cp ubuntu-server-2404-autoinstall.iso \
   /var/lib/libvirt/iso/ubuntu-server-2404-autoinstall.iso
@@ -2041,78 +2043,10 @@ virt-install \
   --noautoconsole \
   --console pty,target_type=serial \
   --debug
-```
 
----
-
-```bash
+# To watch the install. Once it completes it will stop the vm:
 $ virsh console ubuntu-server-2404
-```
-
-```bash
 $ virsh-viewer ubuntu-server-2404
-```
-
----
-hideInToc: true
----
-
-# Disable cloud-init and remove cloud-init ISO
-
-```bash
-virsh start ubuntu-server-2404
-
-# login with automat
-# verify cloud-init disabled
-$ sudo cloud-init status
-status: disabled
-
-$ sudo apt-get update
-$ sudo apt-get install qemu-guest-agent
-
-$ sudo shutdown -h now
-```
-
----
-hideInToc: true
----
-
-# Snapshots
-
-```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2404 --name clean --description "Initial install"
-$ virsh snapshot-list ubuntu-server-2404
-$ virsh snapshot-revert ubuntu-server-2404 clean
-$ virsh snapshot-delete ubuntu-server-2404 clean
-
-$ virsh shutdown ubuntu-server-2404
-$ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
-```
-
----
-hideInToc: true
----
-
-# Get IP of virtual machine
-
-```bash
-virsh start ubuntu-server-2404
-
-virsh list --all
-```
-
-```bash
-$ virsh domifaddr ubuntu-server-2404 --source agent
-```
-
-```bash
-virsh net-dhcp-leases default
-```
-
-```bash
-virsh domiflist ubuntu-server-2404
-sudo apt-get install net-tools
-arp -an
 ```
 
 ---
