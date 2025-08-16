@@ -1996,10 +1996,9 @@ https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server
 ```bash
 cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-server-2404
 
-# curl -LO https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
-curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/24.04.2/ubuntu-24.04.2-live-server-amd64.iso
-$ shasum -a 256 ubuntu-24.04.2-live-server-amd64.iso
-d6dab0c3a657988501b4bd76f1297c053df710e06e0c3aece60dead24f270b4d  ubuntu-24.04.2-live-server-amd64.iso
+$ curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso
+$ shasum -a 256 ubuntu-24.04.3-live-server-amd64.iso
+c3514bf0056180d09376462a7a1b4f213c1d6e8ea67fae5c25099c6fd3d8274b  ubuntu-24.04.3-live-server-amd64.iso
 
 docker pull docker.io/boxcutter/ubuntu-autoinstall
 docker run -it --rm \
@@ -2008,9 +2007,16 @@ docker run -it --rm \
     -a autoinstall.yaml \
     -g grub.cfg \
     -i \
-    -s ubuntu-24.04.2-live-server-amd64.iso \
+    -s ubuntu-24.04.3-live-server-amd64.iso \
     -d ubuntu-server-2404-autoinstall.iso
 ```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-live-server-amd64.iso
+```
+-->
 
 ---
 
@@ -2019,6 +2025,7 @@ sudo cp ubuntu-server-2404-autoinstall.iso \
   /var/lib/libvirt/iso/ubuntu-server-2404-autoinstall.iso
 
 virsh vol-create-as default ubuntu-server-2404.qcow2 50G --format qcow2
+# virsh vol-delete --pool default ubuntu-server-2404.qcow2
 
 virt-install \
   --connect qemu:///system \
@@ -2029,7 +2036,7 @@ virt-install \
   --vcpus 2 \
   --os-variant ubuntu24.04 \
   --disk vol=default/ubuntu-server-2404.qcow2,bus=virtio \
-  --network network=default,model=virtio \
+  --network network=host-network,model=virtio \
   --graphics spice \
   --noautoconsole \
   --console pty,target_type=serial \
