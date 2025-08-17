@@ -2171,16 +2171,19 @@ APT::Periodic::Unattended-Upgrade "0";
 
 ---
 
-# Install Ubuntu 24.04 Desktop using VNC
+# Ubuntu Desktop 24.04 install - prepare ISO
 
 https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-desktop-2404
 
 
 ```bash
-# curl -LO https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-curl -LO https:///https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-% shasum -a 256 ubuntu-24.04.2-desktop-amd64.iso
-d7fe3d6a0419667d2f8eff12796996328daa2d4f90cd9f87aa9371b362f987bf  ubuntu-24.04.2-desktop-amd64.iso
+mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
+git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
+cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-desktop-2404
+
+curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-desktop-amd64.iso
+$ shasum -a 256 ubuntu-24.04.3-desktop-amd64.iso 
+faabcf33ae53976d2b8207a001ff32f4e5daae013505ac7188c9ea63988f8328  ubuntu-24.04.3-desktop-amd64.iso
 
 docker pull docker.io/boxcutter/ubuntu-autoinstall
 docker run -it --rm \
@@ -2189,17 +2192,24 @@ docker run -it --rm \
     -a autoinstall.yaml \
     -g grub.cfg \
     -i \
-    -s ubuntu-24.04.2-desktop-amd64.iso \
-    -d ubuntu-24.04.2-desktop-autoinstall.iso
+    -s ubuntu-24.04.3-desktop-amd64.iso \
+    -d ubuntu-24.04.3-desktop-amd64-autoinstall.iso
 ```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-desktop-amd64.iso
+```
+-->
 
 ---
 hideInToc: true
 ---
 
 ```bash
-sudo cp ubuntu-24.04.2-desktop-autoinstall.iso \
-  /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-autoinstall.iso
+sudo cp ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
+  /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso
 
 virsh vol-create-as default ubuntu-desktop-2404.qcow2 50G --format qcow2
 
@@ -2207,7 +2217,7 @@ virt-install \
   --connect qemu:///system \
   --name ubuntu-desktop-2404 \
   --boot uefi \
-  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-autoinstall.iso \
+  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
   --memory 4096 \
   --vcpus 2 \
   --os-variant ubuntu24.04 \
@@ -2233,33 +2243,6 @@ virsh dumpxml ubuntu-desktop-2404 | grep "graphics type='vnc'"
 ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
 # Use a vnc client to connect to `vnc://<host_ip>:5900`
 # When the install is complete the VM will be shut down
-```
-
----
-hideInToc: true
----
-
-```bash
-$ virsh domblklist ubuntu-desktop-2404
-$ virsh change-media ubuntu-desktop-2404 sda --eject
-
-# Reconfigure VNC
-virsh edit ubuntu-desktop-2404
-<graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' passwd='foobar'/>
-<graphics type='none'/>
-virsh restart ubuntu-desktop-2404
-
-$ virsh start ubuntu-desktop-2404
-
-# Optional - Enable serial console access
-# https://ravada.readthedocs.io/en/latest/docs/config_console.html
-# enable serial service in VM
-sudo systemctl enable --now serial-getty@ttyS0.service
-
-# Install acpi or qemu-guest-agent in the vm so that
-# 'virsh shutdown <image>' works
-$ sudo apt-get update
-$ sudo apt-get install qemu-guest-agent
 ```
 
 ---
