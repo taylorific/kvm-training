@@ -1928,10 +1928,42 @@ virt-install \
 
 # Ubuntu autoinstall
 
+Ubuntu Automatic installation lets you answer all configuration questions
+ahead of time with an autoinstall configuration allowing an Ubuntu install
+to run without any interaction.
+
+Primarily used to automate OS installs on physical machines (a.k.a. metal).
+
+https://canonical-subiquity.readthedocs-hosted.com/en/latest/intro-to-autoinstall.html
+
 - Script Ubuntu manual install with pre-configured answers
 - Big install payload, slow to install
 - Works on metal
 - Complete driver set
+
+---
+hideInToc: true
+---
+
+# Autoinstall YAML
+
+Autoinstall configuration is provided via an `autoinstall.yaml` file in
+the following form:
+
+```yaml
+#cloud-config
+autoinstall:
+    version: 1
+    ....
+```
+
+The `autoinstall.yaml` file can be provided on the installation ISO itself
+or downloaded over the network.
+
+A good starting point is to use the output of the Ubuntu installer from a
+manual install. Every time the Ubuntu installer is used, even in manual
+mode, it generates an autoinstall for repeating the installation in
+`/var/log/installer/autoinstall-user-data`.
 
 ---
 hideInToc: true
@@ -1993,7 +2025,7 @@ docker run hello-world
 
 ```bash
 mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
-git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
+git clone https://github.com/boxcutter/kvm
 cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-server-2404
 
 $ curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso
@@ -2008,7 +2040,7 @@ docker run -it --rm \
     -g grub.cfg \
     -i \
     -s ubuntu-24.04.3-live-server-amd64.iso \
-    -d ubuntu-server-2404-autoinstall.iso
+    -d ubuntu-24.04.3-live-server-amd64-autoinstall.iso
 ```
 
 <!--
@@ -2023,7 +2055,7 @@ curl -LO \
 # Ubuntu Server 24.04 autoinstall - test autoinstall in a VM
 
 ```bash
-sudo cp ubuntu-server-2404-autoinstall.iso \
+sudo cp ubuntu-24.04.3-live-server-amd64.iso \
   /var/lib/libvirt/iso/ubuntu-server-2404-autoinstall.iso
 
 virsh vol-create-as default ubuntu-server-2404.qcow2 50G --format qcow2
