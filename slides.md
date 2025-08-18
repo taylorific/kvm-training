@@ -2072,7 +2072,7 @@ curl -LO \
 
 ---
 
-# Ubuntu Server 24.04 autoinstall - test autoinstall in a VM
+# Ubuntu Server 24.04 autoinstall - test in a VM
 
 ```bash
 sudo cp ubuntu-24.04.3-live-server-amd64.iso \
@@ -2101,23 +2101,79 @@ $ virsh-viewer ubuntu-server-2404
 ```
 
 ---
+
+# Ubuntu Desktop 24.04 install - prepare ISO
+
+https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-desktop-2404
+
+
+```bash
+mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
+git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
+cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-desktop-2404
+
+curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-desktop-amd64.iso
+$ shasum -a 256 ubuntu-24.04.3-desktop-amd64.iso 
+faabcf33ae53976d2b8207a001ff32f4e5daae013505ac7188c9ea63988f8328  ubuntu-24.04.3-desktop-amd64.iso
+
+docker pull docker.io/boxcutter/ubuntu-autoinstall
+docker run -it --rm \
+  --mount type=bind,source="$(pwd)",target=/data \
+  docker.io/boxcutter/ubuntu-autoinstall \
+    -a autoinstall.yaml \
+    -g grub.cfg \
+    -i \
+    -s ubuntu-24.04.3-desktop-amd64.iso \
+    -d ubuntu-24.04.3-desktop-amd64-autoinstall.iso
+```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-desktop-amd64.iso
+```
+-->
+
+---
 hideInToc: true
 ---
 
-# If you need additional drivers
+```bash
+sudo cp ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
+  /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso
+
+virsh vol-create-as default ubuntu-desktop-2404.qcow2 50G --format qcow2
+
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-desktop-2404 \
+  --boot uefi \
+  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
+  --memory 4096 \
+  --vcpus 2 \
+  --os-variant ubuntu24.04 \
+  --disk vol=default/ubuntu-desktop-2404.qcow2,bus=virtio \
+  --network network=default,model=virtio \
+  --graphics vnc,listen=0.0.0.0,password=foobar \
+  --video qxl \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --debug
+```
+
+---
+hideInToc: true
+---
 
 ```bash
-# First try to install the kernel modules package
-sudo apt-get update
-sudo apt-get install linux-modules-$(uname -r)
+virsh vncdisplay ubuntu-desktop-2404
+virsh dumpxml ubuntu-desktop-2404 | grep "graphics type='vnc'"
 
-# sudo modprobe <kernel_module>
-
-# If that still doesn't work, try installing the full generic kernel image
-sudo apt-get install linux-image-generic
-# linux-generic-hwe-24.04
-# sudo apt install linux-lowlatency
-sudo reboot
+# vnc to server on port  to complete install
+# Get the IP address of the default host interface
+ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
+# Use a vnc client to connect to `vnc://<host_ip>:5900`
+# When the install is complete the VM will be shut down
 ```
 
 ---
@@ -2218,82 +2274,6 @@ sudo nano /etc/apt/apt.conf.d/20auto-upgrades
 
 APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Unattended-Upgrade "0";
-```
-
----
-
-# Ubuntu Desktop 24.04 install - prepare ISO
-
-https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-desktop-2404
-
-
-```bash
-mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
-git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
-cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-desktop-2404
-
-curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-desktop-amd64.iso
-$ shasum -a 256 ubuntu-24.04.3-desktop-amd64.iso 
-faabcf33ae53976d2b8207a001ff32f4e5daae013505ac7188c9ea63988f8328  ubuntu-24.04.3-desktop-amd64.iso
-
-docker pull docker.io/boxcutter/ubuntu-autoinstall
-docker run -it --rm \
-  --mount type=bind,source="$(pwd)",target=/data \
-  docker.io/boxcutter/ubuntu-autoinstall \
-    -a autoinstall.yaml \
-    -g grub.cfg \
-    -i \
-    -s ubuntu-24.04.3-desktop-amd64.iso \
-    -d ubuntu-24.04.3-desktop-amd64-autoinstall.iso
-```
-
-<!--
-```
-curl -LO \
-  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-desktop-amd64.iso
-```
--->
-
----
-hideInToc: true
----
-
-```bash
-sudo cp ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
-  /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso
-
-virsh vol-create-as default ubuntu-desktop-2404.qcow2 50G --format qcow2
-
-virt-install \
-  --connect qemu:///system \
-  --name ubuntu-desktop-2404 \
-  --boot uefi \
-  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
-  --memory 4096 \
-  --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk vol=default/ubuntu-desktop-2404.qcow2,bus=virtio \
-  --network network=default,model=virtio \
-  --graphics vnc,listen=0.0.0.0,password=foobar \
-  --video qxl \
-  --noautoconsole \
-  --console pty,target_type=serial \
-  --debug
-```
-
----
-hideInToc: true
----
-
-```bash
-virsh vncdisplay ubuntu-desktop-2404
-virsh dumpxml ubuntu-desktop-2404 | grep "graphics type='vnc'"
-
-# vnc to server on port  to complete install
-# Get the IP address of the default host interface
-ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
-# Use a vnc client to connect to `vnc://<host_ip>:5900`
-# When the install is complete the VM will be shut down
 ```
 
 ---
