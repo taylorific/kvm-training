@@ -2053,9 +2053,14 @@ docker run -it --rm \
   docker.io/boxcutter/ubuntu-autoinstall \
     -a autoinstall.yaml \
     -g grub.cfg \
-    -i \
+    --config-root \
     -s ubuntu-24.04.3-live-server-amd64.iso \
     -d ubuntu-24.04.3-live-server-amd64-autoinstall.iso
+
+# Verify autoinstall.yaml exists in root
+$ isoinfo -R -i \
+    ubuntu-24.04.3-desktop-autoinstall.iso -f | grep -i autoinstall
+/autoinstall.yaml
 ```
 
 <!--
@@ -2074,7 +2079,6 @@ sudo cp ubuntu-24.04.3-live-server-amd64.iso \
   /var/lib/libvirt/iso/ubuntu-server-2404-autoinstall.iso
 
 virsh vol-create-as default ubuntu-server-2404.qcow2 50G --format qcow2
-# virsh vol-delete --pool default ubuntu-server-2404.qcow2
 
 virt-install \
   --connect qemu:///system \
