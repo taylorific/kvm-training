@@ -1978,21 +1978,36 @@ hideInToc: true
 hideInToc: true
 ---
 
-# Create ISO pool
+# Preqrequisites - ubuntu-autoinstall container image
 
+We'll be using the `ubuntu-autoinstall` container image to create ISO images.
+Creating a bootable ISO requires embedding special boot sectors which requires
+root privileges. It's easier to assemble a temporary filesystem with
+with all the necessary permissions inside a container image, and then discard
+it once the ISO has been created.
 
 ```bash
-virsh pool-define-as iso dir --target "/var/lib/libvirt/iso"
-virsh pool-build iso
-virsh pool-start iso
-virsh pool-autostart iso
+$ docker run -it --rm docker.io/boxcutter/ubuntu-autoinstall -h
+Usage:  /app/image-create.sh [options]
+
+Ubuntu Autoinstall ISO generator
+
+  -h, --help                Print help
+  -s, --source PATH         Source ISO path
+  -d, --destination PATH    Destination ISO path
+  -a, --autoinstall PATH    Autoinstall config file
+  -g, --grub PATH           Grub.cfg file
+  -l, --loopback PATH       Loopback.cfg file
+  -m, --metadata PATH       meta-data config file
+  -N, --config-nocloud      Copy autoinstall config as NoCloud provider
+  -R, --config-root         Copy autoinstall to ISO root
 ```
 
 ---
 hideInToc: true
 ---
 
-# Docker install
+# Preqrequisites - Docker install
 
 ```bash
 # Add Docker's official GPG key:
