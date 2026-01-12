@@ -2810,3 +2810,7 @@ hideInToc: true
 SHIFT+F10 OOBE\BYPOASSNRO
 SHIFT+F10 start ms-cxh:localonly
 ```
+
+---
+src: ./talos/talos-slides.md
+---
