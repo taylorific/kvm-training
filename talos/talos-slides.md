@@ -34,6 +34,13 @@ $ shasum -a 256 metal-amd64.iso
 sudo cp metal-amd64.iso /var/lib/libvirt/iso/metal-amd64.iso
 ```
 
+```bash
+sudo mkdir -p /mnt/iso
+sudo mount -o loop,ro metal-amd64.iso /mnt/iso
+
+sudo umount /mnt/iso
+```
+
 ---
 hideInToc: true
 ---
@@ -54,6 +61,21 @@ virt-install \
 
 # Talos boots into RAM-only live mode
 virt-viewer talos-cluster &
+```
+
+```
+virt-install \
+  --connect qemu:///system \
+  --name talos-cluster \
+  --boot hd,cdrom \
+  --cdrom /var/lib/libvirt/iso/metal-amd64.iso \
+  --disk pool=default,format=qcow2,bus=virtio,size=60 \
+  --memory 4096 \
+  --vcpus 2 \
+  --os-variant linux2022 \
+  --network network=host-network,model=virtio \
+  --graphics none \
+  --console pty,target_type=serial
 ```
 
 ---
