@@ -2814,3 +2814,7 @@ SHIFT+F10 start ms-cxh:localonly
 ---
 src: ./talos/talos-slides.md
 ---
+
+---
+src: ./kairos/kairos-slides.md
+---
