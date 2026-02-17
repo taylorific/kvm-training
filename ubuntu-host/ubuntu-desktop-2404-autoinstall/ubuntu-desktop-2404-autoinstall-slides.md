@@ -32,6 +32,11 @@ $ docker run -it --rm \
     --config-root \
     --source ubuntu-24.04.4-desktop-amd64.iso \
     --destination ubuntu-24.04.4-desktop-amd64-autoinstall.iso
+
+# Verify autoinstall.yaml exists in root
+$ isoinfo -R -i \
+    ubuntu-24.04.4-desktop-autoinstall.iso -f | grep -i autoinstall
+/autoinstall.yaml
 ```
 
 <!--
