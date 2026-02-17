@@ -134,3 +134,22 @@ $ sudo apt-get install qemu-guest-agent
 $ virsh domifaddr ubuntu-desktop-2404 --source agent
 ```
 
+---
+hideInToc: true
+---
+
+# Snapshots and cleanup
+
+```bash
+export VM_NAME=ubuntu-desktop-2404
+$ virsh snapshot-create-as --domain "$VM_NAME" --name clean --description "Initial install"
+$ virsh snapshot-list "$VM_NAME"
+$ virsh snapshot-revert "$VM_NAME" clean
+$ virsh snapshot-delete "$VM_NAME" clean
+```
+
+```bash
+export VM_NAME=ubuntu-desktop-2404
+$ virsh shutdown "$VM_NAME"
+$ virsh undefine "$VM_NAME" --nvram --remove-all-storage
+```
