@@ -31,6 +31,7 @@ $ docker run -it --rm \
   --mount type=bind,source="$(pwd)",target=/data \
   docker.io/boxcutter/ubuntu-autoinstall \
     --autoinstall autoinstall.yaml \
+    --grub grub.cfg \
     --config-root \
     --source "$ISO_SOURCE" \
     --destination "$ISO_DESTINATION"
