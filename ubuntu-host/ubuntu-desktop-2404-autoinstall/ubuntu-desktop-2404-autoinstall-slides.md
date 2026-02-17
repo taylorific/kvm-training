@@ -12,7 +12,7 @@ layout: section
 hideInToc: true
 ---
 
-# Prepare autoinstall ISO - Ubuntu Desktop 24.04
+## Prepare autoinstall ISO - Ubuntu Desktop 24.04
 
 ```bash
 $ mkdir -p ~/github/boxcutter
@@ -46,10 +46,11 @@ curl -LO \
 ```
 -->
 
-# Test in a VM - Ubuntu Desktop 24.04 autoinstall
 ---
 hideInToc: true
 ---
+
+## Test in a VM - Ubuntu Desktop 24.04 autoinstall
 
 ```bash
 sudo cp ubuntu-24.04.4-desktop-amd64.iso \

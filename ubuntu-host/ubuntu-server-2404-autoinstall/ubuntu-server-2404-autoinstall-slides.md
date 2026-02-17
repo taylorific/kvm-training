@@ -12,43 +12,46 @@ layout: section
 hideInToc: true
 ---
 
-# Ubuntu Server 24.04 autoinstall - prepare ISO
+## Prepare autoinstall ISO - Ubuntu Server 24.04
 
 ```bash
-mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
-git clone https://github.com/boxcutter/kvm
-cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-server-2404
+$ mkdir -p ~/github/boxcutter
+$ cd ~/github/boxcutter
+$ git clone https://github.com/boxcutter/kvm.git
+$ cd ~/github/boxcutter/kvm/autoinstall/generic/ubuntu-desktop-2404/headless
 
-$ curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso
-$ shasum -a 256 ubuntu-24.04.3-live-server-amd64.iso
-c3514bf0056180d09376462a7a1b4f213c1d6e8ea67fae5c25099c6fd3d8274b  ubuntu-24.04.3-live-server-amd64.iso
+$ curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.4-live-server-amd64.iso
+$ shasum -a 256 ubuntu-24.04.4-live-server-amd64.iso
+e907d92eeec9df64163a7e454cbc8d7755e8ddc7ed42f99dbc80c40f1a138433  ubuntu-24.04.4-live-server-amd64.iso
 
-docker pull docker.io/boxcutter/ubuntu-autoinstall
-docker run -it --rm \
+$ docker pull docker.io/boxcutter/ubuntu-autoinstall
+$ docker run -it --rm \
   --mount type=bind,source="$(pwd)",target=/data \
   docker.io/boxcutter/ubuntu-autoinstall \
     -a autoinstall.yaml \
     -g grub.cfg \
     --config-root \
-    -s ubuntu-24.04.3-live-server-amd64.iso \
-    -d ubuntu-24.04.3-live-server-amd64-autoinstall.iso
+    -s ubuntu-24.04.4-live-server-amd64.iso \
+    -d ubuntu-24.04.4-live-server-amd64-autoinstall.iso
 
 # Verify autoinstall.yaml exists in root
 $ isoinfo -R -i \
-    ubuntu-24.04.3-desktop-autoinstall.iso -f | grep -i autoinstall
+    ubuntu-24.04.4-desktop-autoinstall.iso -f | grep -i autoinstall
 /autoinstall.yaml
 ```
 
 <!--
 ```
 curl -LO \
-  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-live-server-amd64.iso
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.4-live-server-amd64.iso
 ```
 -->
 
 ---
+hideInToc: true
+---
 
-# Ubuntu Server 24.04 autoinstall - test in a VM
+## Ubuntu Server 24.04 autoinstall - test in a VM
 
 ```bash
 sudo cp ubuntu-24.04.3-live-server-amd64.iso \
