@@ -1764,6 +1764,8 @@ virt-install \
 ```
 
 ---
+hideInToc: true
+---
 
 # Ubuntu autoinstall
 
