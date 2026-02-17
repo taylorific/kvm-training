@@ -55,21 +55,25 @@ hideInToc: true
 ## Test in a VM - Ubuntu Desktop 24.04 autoinstall
 
 ```bash
-sudo cp ubuntu-24.04.4-desktop-amd64.iso \
-  /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64.iso
+export UBUNTU_DESKTOP_ISO="ubuntu-24.04.4-desktop-amd64-autoinstall.iso"
+sudo cp "$UBUNTU_DESKTOP_ISO" \
+  "/var/lib/libvirt/iso/$UBUNTU_DESKTOP_ISO"
 
 virsh vol-create-as default ubuntu-desktop-2404.qcow2 64G --format qcow2
 
+export VM_NAME=ubuntu-desktop-2404
+export VM_MEMORY=8096
+export VM_VCPU=4
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-desktop-2404 \
+  --name "$VM_NAME" \
   --boot uefi \
-  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64.iso \
-  --memory 4096 \
-  --vcpus 2 \
+  --cdrom "/var/lib/libvirt/iso/$UBUNTU_DESKTOP_ISO" \
+  --memory "$VM_MEMORY" \
+  --vcpus "$VM_VCPU" \
   --cpu mode=host-passthrough \
   --os-variant ubuntu24.04 \
-  --disk vol=default/ubuntu-desktop-2404.qcow2,bus=virtio,cache=none,discard=unmap \
+  --disk vol=default/$VM_NAME.qcow2,bus=virtio,cache=none,discard=unmap \
   --network network=host-network,model=virtio \
   --graphics vnc,listen=0.0.0.0,password=foobar \
   --video qxl \
@@ -77,3 +81,55 @@ virt-install \
   --console pty,target_type=serial \
   --debug
 ```
+
+---
+hideInToc: true
+---
+
+```bash
+# View locally:
+virt-viewer
+```
+
+
+```bash
+# View remotely
+virsh vncdisplay ubuntu-desktop-2404
+virsh dumpxml ubuntu-desktop-2404 | grep "graphics type='vnc'"
+
+# vnc to server on port  to complete install
+# Get the IP address of the default host interface
+ip addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | grep -v 127.0.0.1
+# Use a vnc client to connect to `vnc://<host_ip>:5900`
+# When the install is complete the VM will be shut down
+```
+
+---
+hideInToc: true
+---
+
+```bash
+$ virsh domblklist ubuntu-desktop-2404
+$ virsh change-media ubuntu-desktop-2404 sda --eject
+
+# Reconfigure VNC
+virsh edit ubuntu-desktop-2404
+<graphics type='vnc' port='-1' autoport='yes' listen='127.0.0.1' passwd='foobar'/>
+<graphics type='none'/>
+virsh restart ubuntu-desktop-2404
+
+$ virsh start ubuntu-desktop-2404
+
+# Optional - Enable serial console access
+# https://ravada.readthedocs.io/en/latest/docs/config_console.html
+# enable serial service in VM
+sudo systemctl enable --now serial-getty@ttyS0.service
+
+# Install acpi or qemu-guest-agent in the vm so that
+# 'virsh shutdown <image>' works
+$ sudo apt-get update
+$ sudo apt-get install qemu-guest-agent
+
+$ virsh domifaddr ubuntu-desktop-2404 --source agent
+```
+
