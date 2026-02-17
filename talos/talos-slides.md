@@ -9,14 +9,10 @@ layout: section
 <Link to="toc" title="Table of Contents"/>
 
 ---
-layout: section
+hideInToc: true
 ---
 
 ## Install Talos
-
-<br>
-<br>
-<Link to="toc" title="Table of Contents"/>
 
 ---
 hideInToc: true
