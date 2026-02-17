@@ -59,11 +59,12 @@ export UBUNTU_DESKTOP_ISO="ubuntu-24.04.4-desktop-amd64-autoinstall.iso"
 sudo cp "$UBUNTU_DESKTOP_ISO" \
   "/var/lib/libvirt/iso/$UBUNTU_DESKTOP_ISO"
 
-virsh vol-create-as default ubuntu-desktop-2404.qcow2 64G --format qcow2
-
 export VM_NAME=ubuntu-desktop-2404
 export VM_MEMORY=8096
 export VM_VCPU=4
+
+virsh vol-create-as default "$VM_NAME.qcow2" 64G --format qcow2
+
 virt-install \
   --connect qemu:///system \
   --name "$VM_NAME" \
