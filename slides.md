@@ -2104,33 +2104,29 @@ $ virsh-viewer ubuntu-server-2404
 
 # Ubuntu Desktop 24.04 install - prepare ISO
 
-https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-desktop-2404
-
-
 ```bash
 mkdir -p ~/github/boxcutter && cd ~/github/boxcutter
-git clone https://github.com/boxcutter/kvm/tree/main/autoinstall/generic/kvm/ubuntu-server-2404
-cd ~/github/boxcutter/kvm/autoinstall/generic/kvm/ubuntu-desktop-2404
+git clone https://github.com/boxcutter/kvm.git
+cd ~/github/boxcutter/kvm/autoinstall/generic/ubuntu-desktop-2404/headless
 
-curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.3-desktop-amd64.iso
-$ shasum -a 256 ubuntu-24.04.3-desktop-amd64.iso 
-faabcf33ae53976d2b8207a001ff32f4e5daae013505ac7188c9ea63988f8328  ubuntu-24.04.3-desktop-amd64.iso
+curl -LO https://releases.ubuntu.com/noble/ubuntu-24.04.4-desktop-amd64.iso
+$ shasum -a 256 ubuntu-24.04.4-desktop-amd64.iso
+3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e  ubuntu-24.04.4-desktop-amd64.iso
 
 docker pull docker.io/boxcutter/ubuntu-autoinstall
 docker run -it --rm \
   --mount type=bind,source="$(pwd)",target=/data \
   docker.io/boxcutter/ubuntu-autoinstall \
-    -a autoinstall.yaml \
-    -g grub.cfg \
-    -i \
-    -s ubuntu-24.04.3-desktop-amd64.iso \
-    -d ubuntu-24.04.3-desktop-amd64-autoinstall.iso
+    --autoinstall autoinstall.yaml \
+    --config-root \
+    --source ubuntu-24.04.4-desktop-amd64.iso \
+    --destination ubuntu-24.04.4-desktop-amd64-autoinstall.iso
 ```
 
 <!--
 ```
 curl -LO \
-  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.3-desktop-amd64.iso
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.4-desktop-amd64.iso
 ```
 -->
 
@@ -2139,16 +2135,16 @@ hideInToc: true
 ---
 
 ```bash
-sudo cp ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
-  /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso
+sudo cp ubuntu-24.04.4-desktop-amd64-autoinstall.iso \
+  /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64-autoinstall.iso
 
-virsh vol-create-as default ubuntu-desktop-2404.qcow2 50G --format qcow2
+virsh vol-create-as default ubuntu-desktop-2404.qcow2 64G --format qcow2
 
 virt-install \
   --connect qemu:///system \
   --name ubuntu-desktop-2404 \
   --boot uefi \
-  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.3-desktop-amd64-autoinstall.iso \
+  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64-autoinstall.iso \
   --memory 4096 \
   --vcpus 2 \
   --os-variant ubuntu24.04 \
@@ -2183,19 +2179,25 @@ hideInToc: true
 # Ubuntu 24.04 Desktop manual install
 
 ```bash
-curl -LO https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-# curl -LO https://https://crake-nexus.org.boxcutter.net//repository/ubuntu-releases-proxy/24.04.2/ubuntu-24.04.2-desktop-amd64.iso
-% shasum -a 256 ubuntu-24.04.2-desktop-amd64.iso
-d7fe3d6a0419667d2f8eff12796996328daa2d4f90cd9f87aa9371b362f987bf  ubuntu-24.04.2-desktop-amd64.iso
+curl -LO https://releases.ubuntu.com/24.04.4/ubuntu-24.04.4-desktop-amd64.iso
+$ shasum -a 256 ubuntu-24.04.4-desktop-amd64.iso
+3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e  ubuntu-24.04.4-desktop-amd64.iso
 ```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-releases-proxy/noble/ubuntu-24.04.4-desktop-amd64.iso
+```
+-->
 
 ---
 hideInToc: true
 ---
 
 ```bash
-sudo cp ubuntu-24.04.2-desktop-amd64.iso \
-  /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-amd64.iso
+sudo cp ubuntu-24.04.4-desktop-amd64.iso \
+  /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64.iso
 
 virsh vol-create-as default ubuntu-desktop-2404.qcow2 64G --format qcow2
 
@@ -2203,7 +2205,7 @@ virt-install \
   --connect qemu:///system \
   --name ubuntu-desktop-2404 \
   --boot uefi \
-  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.2-desktop-amd64.iso \
+  --cdrom /var/lib/libvirt/iso/ubuntu-24.04.4-desktop-amd64.iso \
   --memory 4096 \
   --vcpus 2 \
   --cpu mode=host-passthrough \
