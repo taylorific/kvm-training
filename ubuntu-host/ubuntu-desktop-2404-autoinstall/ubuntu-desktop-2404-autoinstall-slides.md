@@ -25,17 +25,19 @@ $ shasum -a 256 ubuntu-24.04.4-desktop-amd64.iso
 3a4c9877b483ab46d7c3fbe165a0db275e1ae3cfe56a5657e5a47c2f99a99d1e  ubuntu-24.04.4-desktop-amd64.iso
 
 $ docker pull docker.io/boxcutter/ubuntu-autoinstall
+$ export ISO_SOURCE="ubuntu-24.04.4-desktop-amd64.iso"
+$ export ISO_DESTINATION="ubuntu-24.04.4-desktop-amd64-autoinstall.iso"
 $ docker run -it --rm \
   --mount type=bind,source="$(pwd)",target=/data \
   docker.io/boxcutter/ubuntu-autoinstall \
     --autoinstall autoinstall.yaml \
     --config-root \
-    --source ubuntu-24.04.4-desktop-amd64.iso \
-    --destination ubuntu-24.04.4-desktop-amd64-autoinstall.iso
+    --source "$ISO_SOURCE" \
+    --destination "$ISO_DESTINATION"
 
 # Verify autoinstall.yaml exists in root
 $ isoinfo -R -i \
-    ubuntu-24.04.4-desktop-autoinstall.iso -f | grep -i autoinstall
+    "$ISO_DESTINATION" -f | grep -i autoinstall
 /autoinstall.yaml
 ```
 
