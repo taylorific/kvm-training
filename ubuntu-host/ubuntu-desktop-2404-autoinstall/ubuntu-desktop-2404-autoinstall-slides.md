@@ -62,7 +62,6 @@ sudo cp "$UBUNTU_DESKTOP_ISO" \
 export VM_NAME=ubuntu-desktop-2404
 export VM_MEMORY=8096
 export VM_VCPU=4
-
 virsh vol-create-as default "$VM_NAME.qcow2" 64G --format qcow2
 
 virt-install \
