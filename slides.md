@@ -933,6 +933,8 @@ curl -LO \
 -->
 
 ---
+hideInToc: true
+---
 
 ```bash
 # Required for NoCloud module to function, uniquely identifies instance
@@ -942,6 +944,8 @@ local-hostname: ubuntu-server-2404
 EOF
 ```
 
+---
+hideInToc: true
 ---
 
 ```bash
