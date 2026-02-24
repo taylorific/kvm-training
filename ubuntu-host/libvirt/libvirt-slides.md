@@ -106,18 +106,19 @@ hideInToc: true
 # Image pool
 
 ```bash
+$ POOL_NAME=default
 $ virsh pool-define-as \
-    --name default \
+    --name "$POOL_NAME" \
     --type dir \
-    --target /var/lib/libvirt/images
-$ virsh pool-build default
-$ virsh pool-start default
-$ virsh pool-autostart default
+    --target "/var/lib/libvirt/$POOL_NAME"
+$ virsh pool-build "$POOL_NAME"
+$ virsh pool-start "$POOL_NAME"
+$ virsh pool-autostart "$POOL_NAME"
 ```
 
 ```bash
 $ virsh pool-list --all
-$ virsh vol-list --pool default --details
+$ virsh vol-list --pool "$POOL_NAME" --details
 ```
 
 ---
@@ -132,18 +133,19 @@ makes it usuable. So we manage the lifecycle manually.
 https://github.com/virt-manager/virt-manager/issues/178
 
 ```bash
+$ POOL_NAME=boot-scratch
 $ virsh pool-define-as \
-    --name boot-scratch \
+    --name "$POOL_NAME" \
     --type dir \
     --target /var/lib/libvirt/boot
-$ virsh pool-build boot-scratch
-$ virsh pool-start boot-scratch
-$ virsh pool-autostart boot-scratch
+$ virsh pool-build "$POOL_NAME"
+$ virsh pool-start "$POOL_NAME"
+$ virsh pool-autostart "$POOL_NAME"
 ```
 
 ```bash
 $ virsh pool-list --all
-$ virsh vol-list --pool boot-scratch --details
+$ virsh vol-list --pool "$POOL_NAME" --details
 ```
 
 ---
@@ -153,16 +155,17 @@ hideInToc: true
 # ISO image pool
 
 ```bash
+$ POOL_NAME=iso
 $ virsh pool-define-as \
-    --name iso \
+    --name "$POOL_NAME" \
     --type dir \
-    --target /var/lib/libvirt/iso
-$ virsh pool-build iso
-$ virsh pool-start iso
-$ virsh pool-autostart iso
+    --target "/var/lib/libvirt/$POOL_NAME"
+$ virsh pool-build "$POOL_NAME"
+$ virsh pool-start "$POOL_NAME"
+$ virsh pool-autostart "$POOL_NAME"
 ```
 
 ```bash
 $ virsh pool-list --all
-$ virsh vol-list --pool iso --details
+$ virsh vol-list --pool "$POOL_NAME" --details
 ```
