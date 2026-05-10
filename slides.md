@@ -153,8 +153,8 @@ hideInToc: true
 # Create directory for config files (optional)
 
 ```bash
-mkdir ubuntu-server-2404
-cd ubuntu-server-2404
+mkdir ubuntu-server-2604
+cd ubuntu-server-2604
 ```
 
 ---
@@ -165,24 +165,24 @@ hideInToc: true
 
 ```bash
 $ curl -LO \
-    https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-$ qemu-img info noble-server-cloudimg-amd64.img
+    https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
+$ qemu-img info resolute-server-cloudimg-amd64.img
 ```
 
 ```bash
 $ sudo qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-amd64.img \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+    resolute-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2
 $ sudo qemu-img resize -f qcow2 \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2 \
     32G
 ```
 
 <!--
 ```
 curl -LO \
-  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/resolute/current/resolute-server-cloudimg-amd64.img
 ```
 -->
 
@@ -195,8 +195,8 @@ hideInToc: true
 ```bash
 # Required for NoCloud module to function, uniquely identifies instance
 cat >meta-data <<EOF
-instance-id: ubuntu-server-2404
-local-hostname: ubuntu-server-2404
+instance-id: ubuntu-server-2604
+local-hostname: ubuntu-server-2604
 EOF
 
 # Main configuration script, tells cloud-init what to do when instance starts
@@ -223,12 +223,12 @@ sudo apt-get install genisoimage
 ```bash
 $ genisoimage \
     -input-charset utf-8 \
-    -output ubuntu-server-2404-cloud-init.img \
+    -output ubuntu-server-2604-cloud-init.img \
     -volid cidata -rational-rock -joliet \
     user-data meta-data
 
-sudo cp ubuntu-server-2404-cloud-init.img \
-  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
+sudo cp ubuntu-server-2604-cloud-init.img \
+  /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso
 ```
 
 Alternative way with cloud-localds:
@@ -240,7 +240,7 @@ sudo apt-get install cloud-image-utils
 
 ```bash
 sudo cloud-localds \
-  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso \
+  /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso \
   user-data meta-data \
   --verbose
 ```
@@ -254,13 +254,13 @@ hideInToc: true
 ```bash
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-server-2404 \
+  --name ubuntu-server-2604 \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
-  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --disk /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso,device=cdrom \
   --network network=default,model=virtio \
   --graphics spice \
   --noautoconsole \
@@ -277,10 +277,10 @@ hideInToc: true
 
 ```bash
 # Command line console
-virsh console ubuntu-server-2404
+virsh console ubuntu-server-2604
 
 # Graphical console
-virt-viewer ubuntu-server-2404
+virt-viewer ubuntu-server-2604
 ```
 
 ---
@@ -306,9 +306,9 @@ $ sudo shutdown -h now
 
 On the host
 ```bash
-$ virsh domblklist ubuntu-server-2404
-$ virsh change-media ubuntu-server-2404 sda --eject
-$ sudo rm /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
+$ virsh domblklist ubuntu-server-2604
+$ virsh change-media ubuntu-server-2604 sda --eject
+$ sudo rm /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso
 ```
 
 
@@ -320,17 +320,17 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2404 --name clean --description "Initial install"
-$ virsh snapshot-list ubuntu-server-2404
-$ virsh snapshot-revert ubuntu-server-2404 clean
-$ virsh snapshot-delete ubuntu-server-2404 clean
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+$ virsh snapshot-list ubuntu-server-2604
+$ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh snapshot-delete ubuntu-server-2604 clean
 ```
 
 # Cleanup
 
 ```bash
-$ virsh shutdown ubuntu-server-2404
-$ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
+$ virsh shutdown ubuntu-server-2604
+$ virsh undefine ubuntu-server-2604 --nvram --remove-all-storage
 ```
 
 ---
@@ -342,13 +342,13 @@ hideInToc: true
 Preferred - use qemu-guest-agent
 
 ```bash
-virsh start ubuntu-server-2404
+virsh start ubuntu-server-2604
 
 virsh list --all
 ```
 
 ```
-$ virsh domifaddr ubuntu-server-2404 --source agent
+$ virsh domifaddr ubuntu-server-2604 --source agent
 ```
 
 When using default NAT-based networking, can query dnsmasq
@@ -358,7 +358,7 @@ virsh net-dhcp-leases default
 ```
 
 ```bash
-virsh domiflist ubuntu-server-2404
+virsh domiflist ubuntu-server-2604
 sudo apt-get install net-tools
 arp -an
 ```
