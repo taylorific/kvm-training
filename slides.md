@@ -90,7 +90,7 @@ hideInToc: true
   - Provides standard API for starting, stopping, configuring VMs
 
 ---
-src: ./ubuntu-host/libvirt/libvirt-slides.md
+src: ./ubuntu-host/libvirt/libvirt-ubuntu-2604-slides.md
 ---
 
 ---
