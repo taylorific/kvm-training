@@ -260,6 +260,30 @@ virt-install \
   --vcpus 2 \
   --os-variant ubuntu-lts-latest \
   --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --cloud-init user-data=user-data,meta-data=meta-data,root-password-generate=on,disable=on \
+  --network network=default,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+```
+
+---
+hideInToc: true
+---
+
+# Spin up image and configure with cloud-init
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-server-2604 \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
   --disk /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso,device=cdrom \
   --network network=default,model=virtio \
   --graphics spice \
