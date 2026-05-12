@@ -58,7 +58,11 @@ hideInToc: true
 $ virt-host-validate qemu
 ```
 
-These `virt-host-validate qmue` warnings are benign:
+---
+hideInToc: true
+---
+
+# These `virt-host-validate qmue` warnings are benign:
 
 ```
 QEMU: Checking for cgroup 'devices' controller support : WARN
@@ -71,7 +75,7 @@ Modern Ubuntu uses cgroup v2, which does not have a separate devices
 controller like cgroup v1 did.
 
 Verify that you are using cgroup v2:
-```
+```bash
 stat -fc %T /sys/fs/cgroup
 # cgroup2fs
 ```
