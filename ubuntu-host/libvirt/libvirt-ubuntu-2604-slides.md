@@ -163,33 +163,6 @@ $ virsh vol-list --pool "$POOL_NAME" --details
 hideInToc: true
 ---
 
-# cloud-init image pool
-
-Note: There is a `--cloud-init` parameter for virt-install to auto-generate the
-cloud-init ISO. However there's currently a bug in virt-install <= 4.1.0 that
-makes it usuable. So we manage the lifecycle manually.
-https://github.com/virt-manager/virt-manager/issues/178
-
-```bash
-$ POOL_NAME=boot-scratch
-$ virsh pool-define-as \
-    --name "$POOL_NAME" \
-    --type dir \
-    --target /var/lib/libvirt/boot
-$ virsh pool-build "$POOL_NAME"
-$ virsh pool-start "$POOL_NAME"
-$ virsh pool-autostart "$POOL_NAME"
-```
-
-```bash
-$ virsh pool-list --all
-$ virsh vol-list --pool "$POOL_NAME" --details
-```
-
----
-hideInToc: true
----
-
 # ISO image pool
 
 ```bash
