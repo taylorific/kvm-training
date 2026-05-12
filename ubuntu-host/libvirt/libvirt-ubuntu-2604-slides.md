@@ -62,11 +62,10 @@ $ virt-host-validate qemu
 hideInToc: true
 ---
 
-# These `virt-host-validate qmue` warnings are benign:
+# These `virt-host-validate` warnings are benign (1 of 2)
 
 ```
 QEMU: Checking for cgroup 'devices' controller support : WARN
-QEMU: Checking for secure guest support                : WARN
 ```
 
 ## cgroup 'devices' controller
@@ -78,6 +77,16 @@ Verify that you are using cgroup v2:
 ```bash
 stat -fc %T /sys/fs/cgroup
 # cgroup2fs
+```
+
+---
+hideInToc: true
+---
+
+# These `virt-host-validate` warnings are benign (2 of 2)
+
+```
+QEMU: Checking for secure guest support                : WARN
 ```
 
 ## secure guest support
