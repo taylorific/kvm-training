@@ -22,7 +22,7 @@ sudo apt-get update
 # Ubuntu 26.04 split qemu-kvm into qemu-system-x86-hwe and qemu-system-x86.
 # The hwe variant is updated more frequently, every 6 months
 # https://ubuntu.com/server/docs/how-to/virtualisation/virt-hwe/
-sudo apt-get install qemu-system-hwe libvirt-daemon-hwe
+sudo apt-get install qemu-system-hwe libvirt-daemon-system-hwe
 sudo apt-get install virtinst
 
 # Ubuntu 24.04
@@ -104,6 +104,8 @@ hideInToc: true
 ---
 
 # Default Network
+
+Configured by `libvirt-daemon-config-network` package
 
 ```bash
 $ cat /usr/share/libvirt/networks/default.xml
