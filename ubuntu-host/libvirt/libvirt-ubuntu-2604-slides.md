@@ -58,24 +58,33 @@ hideInToc: true
 $ virt-host-validate qemu
 ```
 
-X86_64-based machines will likely display a warning about cgroup devices controller support not being enabled.
-This allows you to apply resource management to virtual machines. For more information refer to this doc.
-To add cgroup 'devices' controller support, edit /etc/default/grub and change the line that looks like
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash" to:
+These `virt-host-validate qmue` warnings are benign:
 
-```bash
-# GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=on systemd.unified_cgroup_hierarchy=0"
+```
+QEMU: Checking for cgroup 'devices' controller support : WARN
+QEMU: Checking for secure guest support                : WARN
 ```
 
-```bash
-# amd
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amd_iommu=on iommu=pt systemd.unified_cgroup_hierarchy=0"
+## cgroup 'devices' controller
+
+Modern Ubuntu uses cgroup v2, which does not have a separate devices
+controller like cgroup v1 did.
+
+Verify that you are using cgroup v2:
+```
+stat -fc %T /sys/fs/cgroup
+# cgroup2fs
 ```
 
-```bash
-sudo update-grub
-```
+## secure guest support
+
+This checks for optional confidential VM features:
+
+* AMD: SEV / SEV-ES / SEV-SNP
+* Intel: TDX
+
+These are not required for normal KVM/QEMU virtualization. Older CPUs
+don't have this functionality.
 
 ---
 hideInToc: true
