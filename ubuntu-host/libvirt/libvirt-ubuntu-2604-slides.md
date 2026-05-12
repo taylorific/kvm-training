@@ -12,21 +12,32 @@ layout: section
 hideInToc: true
 ---
 
-# Install QEMU/KVM on Ubuntu 26.04
+# Install QEMU/KVM on Ubuntu
 
 Install QEMU/KVM and libvirtd
 
 ```bash
+# Ubuntu 26.04
 sudo apt-get update
-sudo apt-get install qemu-system-x86-hwe libvirt-daemon-system
+# Ubuntu 26.04 split qemu-kvm into qemu-system-x86-hwe and qemu-system-x86.
+# The hwe variant is updated more frequently, every 6 months
+# https://ubuntu.com/server/docs/how-to/virtualisation/virt-hwe/
+sudo apt-get install qemu-system-hwe libvirt-daemon-hwe
+sudo apt-get install virtinst
+
+# Ubuntu 24.04
+sudo apt-get update
+sudo apt-get install qemu-kvm libvirt-daemon-system
 sudo apt-get install virtinst
 ```
 
 Make sure the current user is a member of the libvirt and kvm groups
 
 ```bash
+# Gives permission to manage virtual machines with virsh
 $ sudo adduser $(id -un) libvirt
 Adding user '<username>' to group 'libvirt' ...
+# Gives permission to access the /dev/kvm device
 $ sudo adduser $(id -un) kvm
 Adding user '<username>' to group 'kvm' ...
 ```
