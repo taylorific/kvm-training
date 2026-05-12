@@ -113,25 +113,27 @@ hideInToc: true
 $ virsh nodeinfo
 CPU model:           x86_64
 CPU(s):              12
-CPU frequency:       3799 MHz
+CPU frequency:       800 MHz
 CPU socket(s):       1
 Core(s) per socket:  6
 Thread(s) per core:  2
 NUMA cell(s):        1
-Memory size:         65699300 KiB
+Memory size:         64312264 KiB
 ```
 
 ```bash
 $ df -h
-Filesystem                         Size  Used Avail Use% Mounted on
-tmpfs                              6.3G  2.4M  6.3G   1% /run
-/dev/mapper/ubuntu--vg-ubuntu--lv  1.8T   16G  1.7T   1% /
-tmpfs                               32G     0   32G   0% /dev/shm
-tmpfs                              5.0M   12K  5.0M   1% /run/lock
-efivarfs                           192K   69K  119K  37% /sys/firmware/efi/efivars
-tmpfs                               32G     0   32G   0% /run/qemu
-/dev/nvme2n1p2                     2.0G  103M  1.7G   6% /boot
-/dev/nvme2n1p1                     1.1G  6.2M  1.1G   1% /boot/efi
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs            13G  5.9M   13G   1% /run
+/dev/nvme1n1p2  1.8T   16G  1.7T   1% /
+tmpfs            31G     0   31G   0% /dev/shm
+efivarfs        192K   70K  118K  38% /sys/firmware/efi/efivars
+none            1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+none            1.0M     0  1.0M   0% /run/credentials/systemd-resolved.service
+tmpfs            31G  8.0K   31G   1% /tmp
+/dev/nvme1n1p1  1.1G  6.4M  1.1G   1% /boot/efi
+tmpfs           6.2G   52K  6.2G   1% /run/user/60578
+tmpfs           6.2G   44K  6.2G   1% /run/user/63112
 ```
 
 ---
@@ -162,6 +164,11 @@ hideInToc: true
 ---
 
 # Download cloud image template and resize
+
+```bash
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+```
 
 ```bash
 $ curl -LO \
@@ -213,6 +220,30 @@ EOF
 hideInToc: true
 ---
 
+# Spin up image and configure with cloud-init
+
+```bash
+virt-install \
+  --connect qemu:///system \
+  --name ubuntu-server-2604 \
+  --boot uefi \
+  --memory 2048 \
+  --vcpus 2 \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --cloud-init user-data=user-data,meta-data=meta-data,disable=on \
+  --network network=default,model=virtio \
+  --graphics spice \
+  --noautoconsole \
+  --console pty,target_type=serial \
+  --import \
+  --debug
+```
+
+---
+hideInToc: true
+---
+
 # Generate cloud-init ISO
 
 ```bash
@@ -243,30 +274,6 @@ sudo cloud-localds \
   /var/lib/libvirt/boot/ubuntu-server-2604-cloud-init.iso \
   user-data meta-data \
   --verbose
-```
-
----
-hideInToc: true
----
-
-# Spin up image and configure with cloud-init
-
-```bash
-virt-install \
-  --connect qemu:///system \
-  --name ubuntu-server-2604 \
-  --boot uefi \
-  --memory 2048 \
-  --vcpus 2 \
-  --os-variant ubuntu-lts-latest \
-  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
-  --cloud-init user-data=user-data,meta-data=meta-data,root-password-generate=on,disable=on \
-  --network network=default,model=virtio \
-  --graphics spice \
-  --noautoconsole \
-  --console pty,target_type=serial \
-  --import \
-  --debug
 ```
 
 ---
