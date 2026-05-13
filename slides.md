@@ -244,6 +244,176 @@ virt-install \
 hideInToc: true
 ---
 
+# Virtual machine console
+
+```bash
+# Command line console
+virsh console ubuntu-server-2604
+
+# Graphical console
+virt-viewer ubuntu-server-2604
+```
+
+---
+hideInToc: true
+---
+
+# Install qemu-guest-agent
+
+```
+$ sudo apt-get update
+$ sudo apt-get install qemu-guest-agent
+```
+
+---
+hideInToc: true
+---
+
+# Verify cloud-init finished
+
+In the guest:
+```bash
+# login with ubuntu user
+$ cloud-init status
+status: done
+
+# volume labeled cidata is mounted as /dev/sr0 with files
+# and copied to /var/lib/cloud/instance/user-data.txt
+$ lsblk -f
+NAME FSTYPE FSVER LABEL           UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+sr0  iso966 Jolie cidata          2026-05-12-22-28-56-00
+```
+
+On the host:
+```bash
+$ virsh dumpxml ubuntu-server-2604 | grep -iA5 cdrom
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/var/lib/libvirt/boot/virtinst-l9b9vxtc-cloudinit.iso' index='1'/>
+      <backingStore/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <alias name='sata0-0-0'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+```
+
+```
+$ sudo shutdown -h now
+```
+
+---
+hideInToc: true
+---
+
+After reboot:
+```bash
+# login with ubuntu user
+
+# /usr/lib/cloud-init/ds-identify checks for cidata volume
+# if found, sets the provider to nocloud, otherwise disabled
+$ cloud-init status --long
+status: disabled
+extended_status: disabled
+boot_status_code: disabled-by-generator
+detail: Cloud-init disabled by cloud-init-generator
+errors: []
+recoverable_errors: {}
+```
+
+---
+hideInToc: true
+---
+
+
+# Snapshots
+
+```bash
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+$ virsh snapshot-list ubuntu-server-2604
+$ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh snapshot-delete ubuntu-server-2604 clean
+```
+
+# Cleanup
+
+```bash
+$ virsh shutdown ubuntu-server-2604
+$ virsh undefine ubuntu-server-2604 --nvram --remove-all-storage
+```
+
+---
+hideInToc: true
+---
+
+# Get IP of virtual machine
+
+Preferred - use qemu-guest-agent
+
+```bash
+virsh start ubuntu-server-2604
+
+virsh list --all
+```
+
+```
+$ virsh domifaddr ubuntu-server-2604 --source agent
+```
+
+When using default NAT-based networking, can query dnsmasq
+
+```
+virsh net-dhcp-leases default
+```
+
+```bash
+virsh domiflist ubuntu-server-2604
+sudo apt-get install net-tools
+arp -an
+```
+
+---
+layout: section
+---
+
+# Legacy method using boot-scratch pool
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
+hideInToc: true
+---
+
+# cloud-init image pool
+
+Note: There is a `--cloud-init` parameter for virt-install to auto-generate the
+cloud-init ISO. However in Ubuntu 24.04 there's currently a bug in
+virt-install <= 4.1.0 that
+makes it usuable. So we manage the lifecycle manually.
+https://github.com/virt-manager/virt-manager/issues/178
+
+```bash
+$ POOL_NAME=boot-scratch
+$ virsh pool-define-as \
+    --name "$POOL_NAME" \
+    --type dir \
+    --target /var/lib/libvirt/boot
+$ virsh pool-build "$POOL_NAME"
+$ virsh pool-start "$POOL_NAME"
+$ virsh pool-autostart "$POOL_NAME"
+```
+
+```bash
+$ virsh pool-list --all
+$ virsh vol-list --pool "$POOL_NAME" --details
+```
+
+---
+hideInToc: true
+---
+
 # Generate cloud-init ISO
 
 ```bash
