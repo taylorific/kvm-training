@@ -124,16 +124,15 @@ Memory size:         64312264 KiB
 ```bash
 $ df -h
 Filesystem      Size  Used Avail Use% Mounted on
-tmpfs            13G  5.9M   13G   1% /run
-/dev/nvme1n1p2  1.8T   16G  1.7T   1% /
-tmpfs            31G     0   31G   0% /dev/shm
-efivarfs        192K   70K  118K  38% /sys/firmware/efi/efivars
+tmpfs           1.5G  2.8M  1.5G   1% /run
+/dev/vda2        62G   12G   47G  20% /
+tmpfs           3.6G     0  3.6G   0% /dev/shm
+efivarfs        256K   68K  184K  27% /sys/firmware/efi/efivars
 none            1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs           3.6G  8.0K  3.6G   1% /tmp
 none            1.0M     0  1.0M   0% /run/credentials/systemd-resolved.service
-tmpfs            31G  8.0K   31G   1% /tmp
-/dev/nvme1n1p1  1.1G  6.4M  1.1G   1% /boot/efi
-tmpfs           6.2G   52K  6.2G   1% /run/user/60578
-tmpfs           6.2G   44K  6.2G   1% /run/user/63112
+/dev/vda1       1.1G  6.4M  1.1G   1% /boot/efi
+tmpfs           727M   80K  727M   1% /run/user/1000
 ```
 
 ---
@@ -152,18 +151,12 @@ https://cloud-images.ubuntu.com/
 hideInToc: true
 ---
 
-# Create directory for config files (optional)
+# Download cloud image template and resize
 
 ```bash
-mkdir ubuntu-server-2604
-cd ubuntu-server-2604
+$ mkdir ubuntu-server-2604
+$ cd ubuntu-server-2604
 ```
-
----
-hideInToc: true
----
-
-# Download cloud image template and resize
 
 ```bash
 sudo apt-get update
@@ -308,7 +301,7 @@ hideInToc: true
 
 After reboot:
 ```bash
-# login with ubuntu user
+# restart and login with ubuntu user
 
 # /usr/lib/cloud-init/ds-identify checks for cidata volume
 # if found, sets the provider to nocloud, otherwise disabled
