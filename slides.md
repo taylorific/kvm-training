@@ -1292,8 +1292,8 @@ hideInToc: true
 NetworkManager check:
 ```bash
 $ nmcli general
-STATE      CONNECTIVITY  WIFI-HW  WIFI     WWAN-HW  WWAN    
-connected  full          enabled  enabled  enabled  enabled
+STATE      CONNECTIVITY  WIFI-HW  WIFI     WWAN-HW  WWAN     METERED
+connected  full          enabled  enabled  missing  enabled  no (guessed)
 
 $ nmcli connection
 NAME                UUID                                  TYPE      DEVICE  
@@ -1348,7 +1348,7 @@ Wired connection 1  779e47c2-776a-3c0a-a498-ebffcbe374c4  ethernet  ens33
 ```bash
 $ ls /etc/netplan
 01-network-manager-all.yaml
-$ cat /etc/netplan/01-network-manager-all.yaml 
+$ sudo cat /etc/netplan/01-network-manager-all.yaml
 # Let NetworkManager manage all devices on this system
 network:
   version: 2
@@ -1511,17 +1511,17 @@ hideInToc: true
 # Download cloud image template and resize
 
 ```bash
-curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+curl -LO https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
 ```
 
 ```bash
-$ qemu-img info noble-server-cloudimg-amd64.img
+$ qemu-img info resolute-server-cloudimg-amd64.img
 $ sudo qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-amd64.img \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+   resolute-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2
 $ sudo qemu-img resize -f qcow2 \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2 \
     32G
 ```
 
@@ -1535,8 +1535,8 @@ hideInToc: true
 touch network-config
 
 cat >meta-data <<EOF
-instance-id: ubuntu-server-2404
-local-hostname: ubuntu-server-2404
+instance-id: ubuntu-server-2604
+local-hostname: ubuntu-server-2604
 EOF
 ```
 
@@ -1549,9 +1549,9 @@ hideInToc: true
 ```bash
 cat >user-data <<EOF
 #cloud-config
-hostname: ubuntu-server-2404
+hostname: ubuntu-server-2604
 users:
-  - name: automat
+  - name: autobot
     uid: 63112
     primary_group: users
     groups: users
@@ -1577,40 +1577,18 @@ EOF
 hideInToc: true
 ---
 
-# Generate cloud-init ISO
-
-```bash
-sudo apt-get update
-sudo apt-get install genisoimage
-```
-
-```bash
-$ genisoimage \
-    -input-charset utf-8 \
-    -output ubuntu-server-2404-cloud-init.img \
-    -volid cidata -rational-rock -joliet \
-    user-data meta-data network-config
-
-sudo cp ubuntu-server-2404-cloud-init.img \
-  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
-```
-
----
-hideInToc: true
----
-
 # Spin up image and configure with cloud-init (on host-network)
 
 ```bash
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-server-2404 \
+  --name ubuntu-server-2604 \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
-  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --cloud-init user-data=user-data,meta-data=meta-data,disable=on \
   --network network=host-network,model=virtio \
   --graphics spice \
   --noautoconsole \
@@ -1626,37 +1604,31 @@ hideInToc: true
 # Accessing image
 
 ```bash
-virsh console ubuntu-server-2404
+virsh console ubuntu-server-2604
 ```
 
 ```bash
-virt-viewer ubuntu-server-2404
+virt-viewer ubuntu-server-2604
 ```
 
 ---
 hideInToc: true
 ---
 
-# Disable cloud-init and remove cloud-init ISO
+# Verify cloud-init is disabled and qemu-guest-agent installed
 
 ```bash
-# login with ubuntu user
-$ cloud-init status
-status: done
+# login with autobot user
+$ cloud-init status --long
+status: disabled
+extended_status: disabled
+boot_status_code: disabled-by-generator
+detail: Cloud-init disabled by cloud-init-generator
+errors: []
+recoverable_errors: {}
 
-# Disable cloud-init
-$ sudo touch /etc/cloud/cloud-init.disabled
-
-$ sudo apt-get update
-$ sudo apt-get install qemu-guest-agent
-
-$ sudo shutdown -h now
-```
-
-```bash
-$ virsh domblklist ubuntu-server-2404
-$ virsh change-media ubuntu-server-2404 sda --eject
-$ sudo rm /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
+$ qemu-ga --version
+QEMU Guest Agent 10.2.1
 ```
 
 ---
@@ -1689,15 +1661,15 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2404 --name clean --description "Initial install"
-$ virsh snapshot-list ubuntu-server-2404
-$ virsh snapshot-revert ubuntu-server-2404 clean
-$ virsh snapshot-delete ubuntu-server-2404 clean
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+$ virsh snapshot-list ubuntu-server-2604
+$ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh snapshot-delete ubuntu-server-2604 clean
 ```
 
 ```bash
-$ virsh shutdown ubuntu-server-2404
-$ virsh undefine ubuntu-server-2404 --nvram --remove-all-storage
+$ virsh shutdown ubuntu-server-2604
+$ virsh undefine ubuntu-server-2604 --nvram --remove-all-storage
 ```
 
 ---
@@ -1707,13 +1679,13 @@ hideInToc: true
 # Get IP of virtual machine (bridged networking)
 
 ```bash
-virsh start ubuntu-server-2404
+virsh start ubuntu-server-2604
 
 virsh list --all
 ```
 
 ```
-virsh domifaddr ubuntu-server-2404 --source agent
+virsh domifaddr ubuntu-server-2604 --source agent
 ```
 
 ```
@@ -1723,7 +1695,7 @@ virsh net-dhcp-leases default
 
 ```
 # Also does not work (only for NAT networking)
-virsh domiflist ubuntu-server-2404
+virsh domiflist ubuntu-server-2604
 sudo apt-get install net-tools
 arp -an
 ```
