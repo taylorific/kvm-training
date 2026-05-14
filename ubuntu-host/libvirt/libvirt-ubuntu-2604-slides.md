@@ -103,7 +103,7 @@ don't have this functionality.
 hideInToc: true
 ---
 
-# Default Network
+# Default Network (1 of 2)
 
 Configured by `libvirt-daemon-config-network` package
 
@@ -120,6 +120,12 @@ $ cat /usr/share/libvirt/networks/default.xml
   </ip>
 </network>
 ```
+
+---
+hideInToc: true
+---
+
+# Default Network (2 of 2)
 
 ```bash
 $ ip -br a
@@ -141,7 +147,12 @@ $ virsh net-list --all
 hideInToc: true
 ---
 
-# Image pool
+# Default image pool
+
+Ubuntu 26.04 DOES NOT create a pool when KVM is installed by
+`libvirt-daemon-common-hwe`. It only creates the
+`/var/lib/libvirt/images` directory. It's easiest to create
+your own default pool.
 
 ```bash
 $ POOL_NAME=default
