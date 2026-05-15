@@ -1082,7 +1082,7 @@ cat <<EOF > /tmp/macvtap-network.xml
 <network>
   <name>macvtap-network</name>
   <forward mode="bridge">
-    <interface dev="eno1"/>
+    <interface dev="enp1s0"/>
   </forward>
 </network>
 EOF
@@ -1123,24 +1123,24 @@ hideInToc: true
 # Download cloud image template and resize
 
 ```bash
-curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+curl -LO https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
 ```
 
 ```bash
-$ qemu-img info noble-server-cloudimg-amd64.img
+$ qemu-img info resolute-server-cloudimg-amd64.img
 $ sudo qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-amd64.img \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+    resolute-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2
 $ sudo qemu-img resize -f qcow2 \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2 \
     32G
 ```
 
 <!--
 ```
 curl -LO \
-  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/resolute/current/resolute-server-cloudimg-amd64.img
 ```
 -->
 
@@ -1151,8 +1151,8 @@ hideInToc: true
 ```bash
 # Required for NoCloud module to function, uniquely identifies instance
 cat >meta-data <<EOF
-instance-id: ubuntu-server-2404
-local-hostname: ubuntu-server-2404
+instance-id: ubuntu-server-2604
+local-hostname: ubuntu-server-2604
 EOF
 ```
 
@@ -1164,9 +1164,9 @@ hideInToc: true
 # Main configuration script, tells cloud-init what to do when instance starts
 cat >user-data <<EOF
 #cloud-config
-hostname: ubuntu-server-2404
+hostname: ubuntu-server-2604
 users:
-  - name: automat
+  - name: autobot
     uid: 63112
     primary_group: users
     groups: users
@@ -1193,35 +1193,15 @@ hideInToc: true
 ---
 
 ```bash
-sudo apt-get update
-sudo apt-get install genisoimage
-```
-
-```bash
-$ genisoimage \
-    -input-charset utf-8 \
-    -output ubuntu-server-2404-cloud-init.img \
-    -volid cidata -rational-rock -joliet \
-    user-data meta-data network-config
-
-sudo cp ubuntu-server-2404-cloud-init.img \
-  /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso
-```
-
----
-hideInToc: true
----
-
-```bash
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-server-2404 \
+  --name ubuntu-server-2604 \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
-  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --cloud-init user-data=user-data,meta-data=meta-data,disable=on \
   --network network=macvtap-network,model=virtio \
   --graphics spice \
   --noautoconsole \
@@ -1255,13 +1235,13 @@ hideInToc: true
 ```bash
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-server-2404 \
+  --name ubuntu-server-2604 \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
-  --disk /var/lib/libvirt/boot/ubuntu-server-2404-cloud-init.iso,device=cdrom \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
+  --cloud-init user-data=user-data,meta-data=meta-data,disable=on \
   --network type=direct,source=eno1,source_mode=bridge,model=virtio \
   --graphics spice \
   --noautoconsole \
@@ -1307,22 +1287,18 @@ STATE      CONNECTIVITY  WIFI-HW  WIFI     WWAN-HW  WWAN     METERED
 connected  full          enabled  enabled  missing  enabled  no (guessed)
 
 $ nmcli connection
-NAME                UUID                                  TYPE      DEVICE  
-Wired connection 1  5297a82f-7244-31f3-9dad-c3fb49be0b33  ethernet  eno1    
-docker0             80651a82-b1af-4ed7-a4bb-e0a802d6f012  bridge    docker0 
-virbr0              d0da1989-df49-44dc-9c48-aa3c978fbb90  bridge    virbr0
+NAME            UUID                                  TYPE      DEVICE
+netplan-enp1s0  cac41fbe-bc18-3d87-bba7-af2af7f8ffab  ethernet  enp1s0
+lo              0323f487-84dd-4ec1-bb47-75a4a0dc56ec  loopback  lo
+virbr0          da53e323-660a-4f73-b1a7-6616079bebb5  bridge    virbr0
 
 $ networkctl
-WARNING: systemd-networkd is not running, output will be incomplete.
+IDX LINK   TYPE     OPERATIONAL SETUP
+  1 lo     loopback -           unmanaged
+  2 enp1s0 ether    -           unmanaged
+  3 virbr0 bridge   -           unmanaged
 
-IDX LINK      TYPE     OPERATIONAL SETUP    
-  1 lo        loopback n/a         unmanaged
-  2 eno1      ether    n/a         unmanaged
-  3 wlp0s20f3 wlan     n/a         unmanaged
-  4 virbr0    bridge   n/a         unmanaged
-  5 docker0   bridge   n/a         unmanaged
-
-5 links listed.
+3 links listed.
 ```
 
 ---
@@ -1348,17 +1324,29 @@ hideInToc: true
 
 ```bash
 $ ip -brief link
-lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
-ens33            UP             00:0c:29:25:7e:47 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enp1s0           UP             52:54:00:5a:22:d1 <BROADCAST,MULTICAST,UP,LOWER_UP>
+virbr0           DOWN           52:54:00:33:85:7c <NO-CARRIER,BROADCAST,MULTICAST,UP>
 
 $ nmcli connection show --active
-NAME                UUID                                  TYPE      DEVICE 
-Wired connection 1  779e47c2-776a-3c0a-a498-ebffcbe374c4  ethernet  ens33
+NAME            UUID                                  TYPE      DEVICE
+netplan-enp1s0  cac41fbe-bc18-3d87-bba7-af2af7f8ffab  ethernet  enp1s0
 ```
 
 ```bash
 $ ls /etc/netplan
-01-network-manager-all.yaml
+00-installer-config.yaml  01-network-manager-all.yaml
+$ sudo cat /etc/netplan/00-installer-config.yaml
+# This is the network config written by 'subiquity'
+network:
+  ethernets:
+    enp1s0:
+      dhcp4: true
+      dhcp6: true
+      match:
+        macaddress: 52:54:00:5a:22:d1
+      set-name: enp1s0
+  version: 2
 $ sudo cat /etc/netplan/01-network-manager-all.yaml
 # Let NetworkManager manage all devices on this system
 network:
@@ -1373,12 +1361,12 @@ hideInToc: true
 # Configure bridged networking with NetworkManager (2 of 2)
 
 ```bash
-# This is the network config written by 'subiquity'
+cat <<'EOF' | sudo tee /etc/netplan/02-bridge.yaml > /dev/null
 network:
   version: 2
   renderer: NetworkManager
   ethernets:
-    ens33:
+    enp1s0:
       dhcp4: false
       dhcp6: false
       optional: true
@@ -1389,7 +1377,9 @@ network:
       accept-ra: false
       link-local: []
       interfaces:
-        - ens33
+        - enp1s0
+EOF
+sudo chmod 600 /etc/netplan/02-bridge.yaml
 ```
 
 ```
