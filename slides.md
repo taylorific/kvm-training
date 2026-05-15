@@ -366,6 +366,25 @@ arp -an
 ```
 
 ---
+hideInToc: true
+---
+
+# If you need additional drivers
+
+```bash
+# First try to install the kernel modules package
+sudo apt-get update
+sudo apt-get install linux-modules-$(uname -r)
+
+# sudo modprobe <kernel_module>
+
+# If that still doesn't work, try installing the full generic kernel image
+sudo apt-get install linux-image-generic
+# linux-generic-hwe-26.04
+sudo reboot
+```
+
+---
 layout: section
 ---
 
@@ -572,7 +591,7 @@ sudo apt-get install linux-modules-$(uname -r)
 
 # If that still doesn't work, try installing the full generic kernel image
 sudo apt-get install linux-image-generic
-# linux-generic-hwe-24.04
+# linux-generic-hwe-26.04
 sudo reboot
 ```
 
@@ -774,18 +793,18 @@ sudo apt-get install libguestfs-tools
 
 ```bash
 $ curl -LO \
-    https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-$ qemu-img info noble-server-cloudimg-amd64.img
+    https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
+$ qemu-img info resolute-server-cloudimg-amd64.img
 ```
 
 ```bash
 $ sudo virt-customize \
-    -a noble-server-cloudimg-amd64.img \
+    -a resolute-server-cloudimg-amd64.img \
     --root-password password:superseekret \
-    --hostname noble-vm \
-    --run-command 'useradd -m -s /bin/bash automat' \
-    --password automat:password:superseekret \
-    --run-command 'usermod -aG sudo automat'
+    --hostname resolute-vm \
+    --run-command 'useradd -m -s /bin/bash autobot' \
+    --password autobot:password:superseekret \
+    --run-command 'usermod -aG sudo autobot'
 [   0.0] Examining the guest ...
 [  14.1] Setting a random seed
 virt-customize: warning: random seed could not be set for this type of
@@ -803,10 +822,10 @@ hideInToc: true
 ```bash
 $ sudo qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-amd64.img \
-    /var/lib/libvirt/images/noble-vm.qcow2
+    resolute-server-cloudimg-amd64.img \
+    /var/lib/libvirt/images/resolute-vm.qcow2
 $ sudo qemu-img resize -f qcow2 \
-    /var/lib/libvirt/images/noble-vm.qcow2 \
+    /var/lib/libvirt/images/resolute-vm.qcow2 \
     32G
 ```
 
@@ -818,14 +837,13 @@ virt-install \
   --memory 2048 \
   --vcpus 2 \
   --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/noble-vm.qcow2,bus=virtio \
+  --disk /var/lib/libvirt/images/resolute-vm.qcow2,bus=virtio \
   --network network=default,model=virtio \
   --graphics spice \
   --noautoconsole \
   --console pty,target_type=serial \
   --import \
   --debug
-
 ```
 
 ---
@@ -852,8 +870,8 @@ sudo apt install qemu-utils
 If the image is in qcow2 format, convert it to raw:
 ```bash
 $ qemu-img convert -f qcow2 -O raw \
-    noble-server-cloudimg-amd64.img \
-    noble-server-cloudimg-amd64.raw
+    resolute-server-cloudimg-amd64.img \
+    resolute-server-cloudimg-amd64.raw
 ```
 
 ---
@@ -863,25 +881,25 @@ hideInToc: true
 Find the offset of where the partition starts:
 
 ```bash
-$ fdisk -l noble-server-cloudimg-amd64.raw
-Disk noble-server-cloudimg-amd64.raw: 3.5 GiB, 3758096384 bytes, 7340032 sectors
+$ fdisk -l resolute-server-cloudimg-amd64.raw
+Disk resolute-server-cloudimg-amd64.raw: 3.5 GiB, 3758096384 bytes, 7340032 sectors
 Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 Disklabel type: gpt
-Disk identifier: 911538A2-3427-4DA6-8050-A7A81B41F049
+Disk identifier: 7F8E2919-DFBA-400E-A316-9AE9885D44BE
 
-Device                              Start     End Sectors  Size Type
-noble-server-cloudimg-amd64.raw1  2099200 7339998 5240799  2.5G Linux filesystem
-noble-server-cloudimg-amd64.raw14    2048   10239    8192    4M BIOS boot
-noble-server-cloudimg-amd64.raw15   10240  227327  217088  106M EFI System
-noble-server-cloudimg-amd64.raw16  227328 2097152 1869825  913M Linux extended b
+Device                                 Start     End Sectors  Size Type
+resolute-server-cloudimg-amd64.raw1  2324480 7339998 5015519  2.4G Linux root (x86-64)
+resolute-server-cloudimg-amd64.raw13    2048 2097152 2095105 1023M Linux extended boot
+resolute-server-cloudimg-amd64.raw14 2099200 2107391    8192    4M BIOS boot
+resolute-server-cloudimg-amd64.raw15 2107392 2324479  217088  106M EFI System
 
 Partition table entries are not in disk order.
 
 # Offset is the second number times the sector size (usually 512 bytes)
-$ echo $((227328 * 512))
-116391936
+$ echo $((2048 * 512))
+1048576
 ```
 
 ---
@@ -891,8 +909,8 @@ hideInToc: true
 ```bash
 # Mount the image
 sudo mkdir /mnt/my_image
-sudo mount -o loop,offset=116391936 \
-  noble-server-cloudimg-amd64.raw /mnt/my_image
+sudo mount -o loop,offset=1048576 \
+  resolute-server-cloudimg-amd64.raw /mnt/my_image
 
 # Image contents are available as /mnt/my_image
 
@@ -930,7 +948,7 @@ hideInToc: true
 
 ```bash
 # Connect the QCOW2 image as a network block device
-sudo qemu-nbd --connect=/dev/nbd0 noble-server-cloudimg-amd64.img
+sudo qemu-nbd --connect=/dev/nbd0 resolute-server-cloudimg-amd64.img
 
 # List partitions
 $ sudo fdisk -l /dev/nbd0
@@ -939,15 +957,15 @@ Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 131072 bytes
 Disklabel type: gpt
-Disk identifier: 911538A2-3427-4DA6-8050-A7A81B41F049
+Disk identifier: 7F8E2919-DFBA-400E-A316-9AE9885D44BE
 
 Device         Start     End Sectors  Size Type
-/dev/nbd0p1  2099200 7339998 5240799  2.5G Linux filesystem
-/dev/nbd0p14    2048   10239    8192    4M BIOS boot
-/dev/nbd0p15   10240  227327  217088  106M EFI System
-/dev/nbd0p16  227328 2097152 1869825  913M Linux extended boot
+/dev/nbd0p1  2324480 7339998 5015519  2.4G Linux root (x86-64)
+/dev/nbd0p13    2048 2097152 2095105 1023M Linux extended boot
+/dev/nbd0p14 2099200 2107391    8192    4M BIOS boot
+/dev/nbd0p15 2107392 2324479  217088  106M EFI System
 
-Partition table entries are not in disk order
+Partition table entries are not in disk order.
 ```
 
 ---
