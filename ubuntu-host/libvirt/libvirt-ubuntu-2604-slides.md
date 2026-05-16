@@ -155,19 +155,18 @@ Ubuntu 26.04 DOES NOT create a pool when KVM is installed by
 your own default pool.
 
 ```bash
-$ POOL_NAME=default
 $ virsh pool-define-as \
-    --name "$POOL_NAME" \
+    --name default \
     --type dir \
-    --target "/var/lib/libvirt/$POOL_NAME"
-$ virsh pool-build "$POOL_NAME"
-$ virsh pool-start "$POOL_NAME"
-$ virsh pool-autostart "$POOL_NAME"
+    --target "/var/lib/libvirt/images"
+$ virsh pool-build default
+$ virsh pool-start default
+$ virsh pool-autostart default
 ```
 
 ```bash
 $ virsh pool-list --all
-$ virsh vol-list --pool "$POOL_NAME" --details
+$ virsh vol-list --pool default --details
 ```
 
 ---
