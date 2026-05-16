@@ -832,7 +832,7 @@ $ sudo qemu-img resize -f qcow2 \
 ```bash
 virt-install \
   --connect qemu:///system \
-  --name noble-vm \
+  --name resolute-vm \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
@@ -852,7 +852,7 @@ hideInToc: true
 
 ```bash
 # login with root
-virsh console noble-vm
+virsh console resolute-vm
 ```
 
 ---
@@ -2023,11 +2023,11 @@ src: ./ubuntu-host/docker/docker-install-slides.md
 ---
 
 ---
-src: ./ubuntu-host/ubuntu-server-2404-autoinstall/ubuntu-server-2404-autoinstall-slides.md
+src: ./ubuntu-host/ubuntu-server-2604-autoinstall/ubuntu-server-2604-autoinstall-slides.md
 ---
 
 ---
-src: ./ubuntu-host/ubuntu-desktop-2404-autoinstall/ubuntu-desktop-2404-autoinstall-slides.md
+src: ./ubuntu-host/ubuntu-desktop-2604-autoinstall/ubuntu-desktop-2604-autoinstall-slides.md
 ---
 
 ---
@@ -2047,17 +2047,26 @@ hideInToc: true
 # x86_64 - Download cloud image template
 
 ```bash
-curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-amd64.img
+$ curl -LO \
+    https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
+
+$ qemu-img info resolute-server-cloudimg-amd64.img
 
 $ qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-amd64.img \
-    ubuntu-server-2404.qcow2
+    resolute-server-cloudimg-amd64.img \
+    ubuntu-server-2604.qcow2
 $ qemu-img resize -f qcow2 \
-    ubuntu-server-2404.qcow2 \
+    ubuntu-server-2604.qcow2 \
     32G
 ```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/resolute/current/resolute-server-cloudimg-amd64.img
+```
+-->
 
 ---
 hideInToc: true
@@ -2067,8 +2076,8 @@ hideInToc: true
 
 ```bash
 cat >meta-data <<EOF
-instance-id: ubuntu-server-2404
-local-hostname: ubuntu-server-2404
+instance-id: ubuntu-server-2604
+local-hostname: ubuntu-server-2604
 EOF
 
 cat >user-data <<EOF
@@ -2113,7 +2122,7 @@ qemu-system-x86_64 \
   -device virtio-mouse \
   -device virtio-net-pci,netdev=net0 \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
-  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -drive file=ubuntu-server-2604.qcow2,if=virtio,format=qcow2 \
   -cdrom cloud-init.iso \
   -drive if=pflash,format=raw,readonly=on,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
   -drive if=pflash,format=raw,readonly=on,unit=1,file=/usr/share/OVMF/OVMF_VARS_4M.fd \
@@ -2137,7 +2146,7 @@ qemu-system-x86_64 \
   -device virtio-mouse \
   -device virtio-net-pci,netdev=net0 \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
-  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -drive file=ubuntu-server-2604.qcow2,if=virtio,format=qcow2 \
   -cdrom cloud-init.iso \
   -nographic
 ```
@@ -2149,17 +2158,23 @@ hideInToc: true
 # arm64 - Download cloud image template
 
 ```bash
-curl -LO https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
-curl -LO https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/noble/current/noble-server-cloudimg-arm64.img
+curl -LO https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-arm64.img
 
 $ qemu-img convert \
     -f qcow2 -O qcow2 \
-    noble-server-cloudimg-arm64.img \
-    ubuntu-server-2404.qcow2
+    resolute-server-cloudimg-arm64.img \
+    ubuntu-server-2604.qcow2
 $ qemu-img resize -f qcow2 \
-    ubuntu-server-2404.qcow2 \
+    ubuntu-server-2604.qcow2 \
     32G
 ```
+
+<!--
+```
+curl -LO \
+  https://crake-nexus.org.boxcutter.net/repository/ubuntu-cloud-images-proxy/resolute/current/resolute-server-cloudimg-amd64.img
+```
+-->
 
 ---
 hideInToc: true
@@ -2169,8 +2184,8 @@ hideInToc: true
 
 ```bash
 cat >meta-data <<EOF
-instance-id: ubuntu-server-2404
-local-hostname: ubuntu-server-2404
+instance-id: ubuntu-server-2604
+local-hostname: ubuntu-server-2604
 EOF
 
 cat >user-data <<EOF
@@ -2231,7 +2246,7 @@ qemu-system-aarch64 \
   -device virtio-gpu-pci \
   -device virtio-net-pci,netdev=net0 \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
-  -drive file=ubuntu-server-2404.qcow2,if=virtio,format=qcow2 \
+  -drive file=ubuntu-server-2604.qcow2,if=virtio,format=qcow2 \
   -cdrom cloud-init.iso \
   -drive if=pflash,format=raw,readonly=on,unit=0,file=flash0.img \
   -drive if=pflash,format=raw,unit=1,file=flash1.img \
