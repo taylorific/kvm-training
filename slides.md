@@ -1255,7 +1255,7 @@ virt-install \
 # br0 - Bridged Networking
 
 ```plantuml
-@startuml
+@startnwdiag
 
 nwdiag {
 
@@ -1266,7 +1266,7 @@ nwdiag {
     ubuntu-server-2404 [ address = "10.67.132.3"];
   }
 }
-@enduml
+@endnwdiag
 ```
 
 ---
