@@ -1506,6 +1506,16 @@ $ virsh net-list --all
 ```
 
 ---
+layout: section
+---
+
+# Ubuntu Server 26.04 (bridge network)
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
 hideInToc: true
 ---
 
