@@ -1509,7 +1509,7 @@ $ virsh net-list --all
 layout: section
 ---
 
-# Ubuntu Server 26.04 (bridge network)
+# Ubuntu Server 26.04 cloud image
 
 <br>
 <br>
