@@ -1839,10 +1839,25 @@ virt-install \
 ```
 
 ---
+layout: section
+---
+
+# CentOS Stream 10 cloud image
+
+<br>
+<br>
+<Link to="toc" title="Table of Contents"/>
+
+---
 hideInToc: true
 ---
 
 # Centos Stream 10
+
+```
+$ mkdir -p centos-stream-10
+$ cd centos-stream-10
+```
 
 ```bash
 $ curl -LO https://cloud.centos.org/centos/10-stream/x86_64/images/CentOS-Stream-GenericCloud-x86_64-10-latest.x86_64.qcow2.SHA256SUM
@@ -1860,7 +1875,7 @@ $ sudo qemu-img convert \
 $ sudo qemu-img resize \
     -f qcow2 \
     /var/lib/libvirt/images/centos-stream-10.qcow2 \
-    32G
+    64G
 ```
 
 ---
@@ -1883,7 +1898,7 @@ cat >user-data <<EOF
 #cloud-config
 hostname: centos-stream-10
 users:
-  - name: automat
+  - name: autobot
     uid: 63112
     primary_group: users
     groups: users
@@ -1910,26 +1925,6 @@ hideInToc: true
 ---
 
 ```bash
-sudo apt-get update
-sudo apt-get install genisoimage
-```
-
-```bash
-$ genisoimage \
-    -input-charset utf-8 \
-    -output centos-stream-10-cloud-init.img \
-    -volid cidata -rational-rock -joliet \
-    user-data meta-data
-
-sudo cp centos-stream-10-cloud-init.img \
-  /var/lib/libvirt/boot/centos-stream-10-cloud-init.iso
-```
-
----
-hideInToc: true
----
-
-```bash
 virt-install \
   --connect qemu:///system \
   --name centos-stream-10 \
@@ -1938,13 +1933,67 @@ virt-install \
   --vcpus 2 \
   --os-variant centos-stream10 \
   --disk /var/lib/libvirt/images/centos-stream-10.qcow2,bus=virtio \
-  --disk /var/lib/libvirt/boot/centos-stream-10-cloud-init.iso,device=cdrom \
+  --cloud-init user-data=user-data,meta-data=meta-data,disable=on \
   --network network=host-network,model=virtio \
   --graphics spice \
   --noautoconsole \
   --console pty,target_type=serial \
   --import \
   --debug
+```
+
+---
+hideInToc: true
+---
+
+# Verify cloud-init disable/qemu-guest agent installed
+
+```bash
+# login with autobot user
+$ sudo cloud-init status --long
+status: disabled
+extended_status: disabled
+boot_status_code: disabled-by-generator
+detail: Cloud-init disabled by cloud-init-generator
+errors: []
+recoverable_errors: {}
+
+$ qemu-ga --version
+QEMU Guest Agent 10.1.0
+```
+
+---
+hideInToc: true
+---
+
+# Snapshots
+
+```bash
+$ virsh snapshot-create-as --domain centos-stream-10 --name clean --description "Initial install"
+$ virsh snapshot-list centos-stream-10
+$ virsh snapshot-revert centos-stream-10 clean
+$ virsh snapshot-delete centos-stream-10 clean
+$ virsh shutdown centos-stream-10
+$ virsh undefine centos-stream-10 --nvram --remove-all-storage
+```
+
+---
+hideInToc: true
+---
+
+# Get IP of virtual machine
+
+```bash
+virsh start ubuntu-server-2604
+
+virsh list --all
+virsh domifaddr ubuntu-server-2604 --source agent
+# Does not work (only for NAT networking)
+virsh net-dhcp-leases default
+# Also does not work (only for NAT networking)
+virsh domiflist ubuntu-server-2604
+sudo apt-get install net-tools
+arp -an
 ```
 
 ---
