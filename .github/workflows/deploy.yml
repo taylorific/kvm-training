@@ -27,10 +27,7 @@ jobs:
           node-version: 'lts/*'
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Install slidev
-        run:  npm add -g @slidev/cli @slidev/theme-default @slidev/theme-seriph
+        run: npm ci
 
       - name: Build
         run: npm run build -- --base /kvm-training/
