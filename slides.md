@@ -2478,19 +2478,19 @@ hideInToc: true
 ```bash
 # Get PCI vendor and device IDs for NVIDIA GPU devices
 $ lspci -nnk | grep -i nvidia
-01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [10de:2489] (rev a1)
+01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [ 10de:2489 ] (rev a1)
 	DeviceName:  WIFI
-	Subsystem: ASUSTeK Computer Inc. GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [1043:884f]
+	Subsystem: ASUSTeK Computer Inc. GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [ 1043:884f ]
 	Kernel driver in use: nouveau
 	Kernel modules: nvidiafb, nouveau
-01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [10de:228b] (rev a1)
-	Subsystem: ASUSTeK Computer Inc. GA104 High Definition Audio Controller [1043:884f]
+01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [ 10de:228b ] (rev a1)
+	Subsystem: ASUSTeK Computer Inc. GA104 High Definition Audio Controller [ 1043:884f ]
 	Kernel driver in use: snd_hda_intel
 	Kernel modules: snd_hda_intel
 
-01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [10de:2489] (rev a1)
+01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104 [GeForce RTX 3060 Ti Lite Hash Rate] [ 10de:2489 ] (rev a1)
 	Kernel modules: nvidiafb, nouveau
-01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [10de:228b] (rev a1)
+01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition Audio Controller [ 10de:228b ] (rev a1)
 ```
 
 ---
