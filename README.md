@@ -17,20 +17,28 @@ Learn more about Slidev at the [documentation](https://sli.dev/).
 
 # Update dependencies
 
+To see what is out of date:
+
 ```bash
 docker run -it --rm \
   --mount type=bind,source="$(pwd)",target="/slidev" \
-  --entrypoint /bin/bash \
-  docker.io/boxcutter/slidev
+  --entrypoint npm \
+  docker.io/boxcutter/slidev outdated
+```
 
-  # pin to 52.15.2 for now
-  # https://github.com/slidevjs/slidev/issues/2629
-  git pull
-  rm -rf node_modules package-lock.json
-  npm install
-  git add package.json package-lock.json
-  git commit -m "Sync npm lockfile"
-  git push
+To upgrade Slidev and the themes to their latest versions:
+
+```bash
+docker run -it --rm \
+  --mount type=bind,source="$(pwd)",target="/slidev" \
+  --entrypoint npm \
+  docker.io/boxcutter/slidev \
+    install @slidev/cli@latest @slidev/theme-default@latest @slidev/theme-seriph@latest
+
+# on the host
+git add package.json package-lock.json
+git commit -m "Sync npm lockfile"
+git push
 ```
 
 # Attributions
