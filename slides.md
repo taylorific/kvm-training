@@ -842,7 +842,7 @@ virt-install \
   --boot uefi \
   --memory 2048 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
+  --os-variant ubuntu-lts-latest \
   --disk /var/lib/libvirt/images/resolute-vm.qcow2,bus=virtio \
   --network network=default,model=virtio \
   --graphics spice \
@@ -1269,7 +1269,7 @@ nwdiag {
     address = "10.67.132.2";
 
     robot01;
-    ubuntu-server-2404 [ address = "10.67.132.3"];
+    ubuntu-server-2604 [ address = "10.67.132.3"];
   }
 }
 @endnwdiag
@@ -1735,7 +1735,7 @@ sudo apt-get install linux-modules-$(uname -r)
 
 # If that still doesn't work, try installing the full generic kernel image
 sudo apt-get install linux-image-generic
-# linux-generic-hwe-24.04
+# linux-generic-hwe-26.04
 sudo reboot
 ```
 
@@ -2383,7 +2383,7 @@ cd kvm
 cd ubuntu/cloud/x86_64
 packer init .
 PACKER_LOG=1 packer build \
-  -var-file ubuntu-24.04-x86_64.pkrvars.hcl \
+  -var-file ubuntu-26.04-x86_64.pkrvars.hcl \
   ubuntu.pkr.hcl
 ```
 
@@ -2391,11 +2391,11 @@ PACKER_LOG=1 packer build \
 $ sudo qemu-img convert \
     -f qcow2 \
     -O qcow2 \
-    output-ubuntu-24.04-x86_64/ubuntu-24.04-x86_64.qcow2 \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2
+    output-ubuntu-26.04-x86_64/ubuntu-26.04-x86_64.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2
 $ sudo qemu-img resize \
     -f qcow2 \
-    /var/lib/libvirt/images/ubuntu-server-2404.qcow2 \
+    /var/lib/libvirt/images/ubuntu-server-2604.qcow2 \
     32G
 ```
 
@@ -2406,12 +2406,12 @@ hideInToc: true
 ```bash
 virt-install \
   --connect qemu:///system \
-  --name ubuntu-server-2404 \
+  --name ubuntu-server-2604 \
   --boot uefi \
   --memory 4096 \
   --vcpus 2 \
-  --os-variant ubuntu24.04 \
-  --disk /var/lib/libvirt/images/ubuntu-server-2404.qcow2,bus=virtio \
+  --os-variant ubuntu-lts-latest \
+  --disk /var/lib/libvirt/images/ubuntu-server-2604.qcow2,bus=virtio \
   --network network=default,model=virtio \
   --graphics spice \
   --noautoconsole \
@@ -2419,7 +2419,7 @@ virt-install \
   --import \
   --debug
 
-virsh console ubuntu-server-2404
+virsh console ubuntu-server-2604
 
 # login with packer user
 ```

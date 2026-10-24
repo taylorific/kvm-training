@@ -53,7 +53,7 @@ curl -LO \
 hideInToc: true
 ---
 
-## Ubuntu Server 24.04 autoinstall - test in a VM
+## Ubuntu Server 26.04 autoinstall - test in a VM
 
 ```bash
 export UBUNTU_SERVER_26_04_ISO_AUTOINSTALL="ubuntu-26.04-live-server-amd64-autoinstall.iso"
