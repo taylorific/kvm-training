@@ -148,9 +148,12 @@ hideInToc: true
 
 ```bash
 export VM_NAME=ubuntu-desktop-2604
-$ virsh snapshot-create-as --domain "$VM_NAME" --name clean --description "Initial install"
+# UEFI guests: libvirt takes only external, disk-only snapshots
+$ virsh snapshot-create-as --domain "$VM_NAME" --name clean --description "Initial install" \
+    --disk-only --atomic
 $ virsh snapshot-list "$VM_NAME"
 $ virsh snapshot-revert "$VM_NAME" clean
+$ virsh start "$VM_NAME"   # a disk-only revert leaves it shut off
 $ virsh snapshot-delete "$VM_NAME" clean
 ```
 

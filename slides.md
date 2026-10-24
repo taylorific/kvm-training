@@ -322,9 +322,12 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+# UEFI guests: libvirt takes only external, disk-only snapshots
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install" \
+    --disk-only --atomic
 $ virsh snapshot-list ubuntu-server-2604
 $ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh start ubuntu-server-2604   # a disk-only revert leaves it shut off
 $ virsh snapshot-delete ubuntu-server-2604 clean
 ```
 
@@ -533,9 +536,12 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+# UEFI guests: libvirt takes only external, disk-only snapshots
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install" \
+    --disk-only --atomic
 $ virsh snapshot-list ubuntu-server-2604
 $ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh start ubuntu-server-2604   # a disk-only revert leaves it shut off
 $ virsh snapshot-delete ubuntu-server-2604 clean
 ```
 
@@ -1672,9 +1678,12 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install"
+# UEFI guests: libvirt takes only external, disk-only snapshots
+$ virsh snapshot-create-as --domain ubuntu-server-2604 --name clean --description "Initial install" \
+    --disk-only --atomic
 $ virsh snapshot-list ubuntu-server-2604
 $ virsh snapshot-revert ubuntu-server-2604 clean
+$ virsh start ubuntu-server-2604   # a disk-only revert leaves it shut off
 $ virsh snapshot-delete ubuntu-server-2604 clean
 ```
 
@@ -1969,9 +1978,12 @@ hideInToc: true
 # Snapshots
 
 ```bash
-$ virsh snapshot-create-as --domain centos-stream-10 --name clean --description "Initial install"
+# UEFI guests: libvirt takes only external, disk-only snapshots
+$ virsh snapshot-create-as --domain centos-stream-10 --name clean --description "Initial install" \
+    --disk-only --atomic
 $ virsh snapshot-list centos-stream-10
 $ virsh snapshot-revert centos-stream-10 clean
+$ virsh start centos-stream-10   # a disk-only revert leaves it shut off
 $ virsh snapshot-delete centos-stream-10 clean
 $ virsh shutdown centos-stream-10
 $ virsh undefine centos-stream-10 --nvram --remove-all-storage
