@@ -56,7 +56,7 @@ curl -LO \
 hideInToc: true
 ---
 
-## Test in a VM - Ubuntu Desktop 24.04 autoinstall
+## Test in a VM - Ubuntu Desktop 26.04 autoinstall
 
 ```bash
 export UBUNTU_DESKTOP_26_04_ISO_AUTOINSTALL="ubuntu-26.04-desktop-amd64-autoinstall.iso"
